@@ -14,6 +14,7 @@
 .idea/dictionaries/**
 .idea/libraries/**
 
+.idea/*
 # File-based project format
 *.iws
 *.ipr
