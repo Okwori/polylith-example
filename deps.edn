@@ -1,6 +1,15 @@
 {:aliases  {:dev {:extra-paths ["development/src"]
 
-                  :extra-deps {org.clojure/clojure {:mvn/version "1.12.4"}}}
+                  :extra-deps {poly/user {:local/root "components/user"}
+                               poly/cli {:local/root "bases/cli"}
+                               org.clojure/clojure {:mvn/version "1.12.4"}}}
+
+            ;:check {:extra-deps {io.github.athos/clj-check {:git/tag "0.1.0" :git/sha "0ca84df"}}
+            ;        :main-opts ["-m" "clj-check.check"
+            ;                    "components/user/src"]}
+
+            :outdated {:main-opts ["-m" "antq.core"]
+                       :extra-deps {com.github.liquidz/antq {:mvn/version "2.11.1276"}}}
 
             :test {:extra-paths []}
 
