@@ -1,6 +1,7 @@
 (ns com.pringwa.service.main
   (:require [aero.core :as aero]
             [clojure.java.io :as io]
+            [com.pringwa.app-state.interface :as app-state]
             [com.pringwa.persistence.interface :as db]
             [com.pringwa.service.routes :as routes]
             [com.pringwa.server.interface :as server]
