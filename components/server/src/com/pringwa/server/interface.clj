@@ -2,6 +2,6 @@
   (:require [com.pringwa.server.core :as server]))
 
 (defn create
-  [handler-fn port]
-  (server/create handler-fn port))
+  [handler-fn]
+  (server/create handler-fn))
 

@@ -8,13 +8,13 @@
             [com.stuartsierra.component :as component]))
 
 (defn new-system
-  ([config] (new-system true config))
-  ([port config]
+  ([config] (new-system config true))
+  ([config port]
    (component/system-map
      ;:datomic/client ()
      ;:datomic/conn (db/create (-> config :database))
      :app-state (app-state/create config)
-     :server (server/create #'routes/router port))))
+     :server (server/create #'routes/router))))
 
 (defn config
   []
@@ -26,5 +26,5 @@
         port (cond-> port (string? port) Integer/parseInt)
         _ (println "Starting up on port" port)]
     (->> (config)
-         (new-system port)
+         (new-system)
          (component/start))))

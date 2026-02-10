@@ -21,12 +21,21 @@
       ["/healthcheck" {:get healthcheck/handler, :name ::healthcheck}]
       ["/indicators"
        ;["" {:get {:handler (handlers/get-all-indicators-handler conn)}}]
-       ["/search" {:post {:handler (fn [] {:x 1 :y 2}) #_(handlers/search-indicators-handler conn)}}]
+       ["/search" {:post {:handler (fn [req] {:status 200
+                                              :body   [{:x 1 :y 2} {:a 2} [1 2 3]]}) #_(handlers/search-indicators-handler conn)}}]
        ;["/types" {:get {:handler #() #_(handlers/get-types-handler conn)}}]
        ;["/authors" {:get {:handler #() #_ (handlers/get-authors-handler conn)}}]
        ;["/:id" {:get {:handler #() #_ (handlers/get-indicator-by-id-handler conn)}}]
-       ]])
-
+       ]]
+     {:conflicts nil
+      :data      {:muuntaja     m/instance
+                  :middleware   [swagger/swagger-feature
+                                 parameters/parameters-middleware
+                                 muuntaja/format-negotiate-middleware
+                                 muuntaja/format-response-middleware
+                                 muuntaja/format-request-middleware
+                                 coercion/coerce-response-middleware
+                                 coercion/coerce-request-middleware]}})
    (ring/routes
      (swagger-ui/create-swagger-ui-handler
        {:path   "/api-docs"

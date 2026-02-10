@@ -1,5 +1,5 @@
-{:web-server {:host #or [#env HOST "localhost"]
-              :port #long #or [#env PORT 3000]
-              ;:context-path #or [#env CONTEXT-PATH "/lra-coordinator"]
-              }
- :database {:schema {:lra/code {:db/unique :db.unique/identity}}}}
+{:server {:host #or [#env HOST "localhost"]
+          :port #long #or [#env PORT 3000]
+          ;:context-path #or [#env CONTEXT-PATH "/lra-coordinator"]
+          }
+ :database {:schema {}}}

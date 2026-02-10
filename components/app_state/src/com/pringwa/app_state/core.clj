@@ -1,7 +1,7 @@
 (ns com.pringwa.app-state.core
   (:require [com.stuartsierra.component :as component]))
 
-(defrecord AppState [config conn]
+(defrecord AppState [config]
   component/Lifecycle
   (start [this]
     this)
@@ -11,4 +11,4 @@
 (defn create-appstate
   [config]
   (component/using (map->AppState {:config config})
-                   [:conn]))
+                   []))
