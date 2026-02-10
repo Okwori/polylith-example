@@ -8,6 +8,7 @@
                     :extra-deps  {poly/user                  {:local/root "components/user"}
                                   poly/persistence           {:local/root "components/persistence"}
                                   poly/server                {:local/root "components/server"}
+                                  poly/service                {:local/root "components/service"}
 
                                   poly/cli                   {:local/root "bases/cli"}
 
