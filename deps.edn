@@ -1,4 +1,9 @@
-{:aliases  {:dev {:extra-paths ["development/src"]
+{:aliases  {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.12"}
+                           org.clojure/tools.deps        {:mvn/version "0.28.1578"}}
+                    :paths ["build/resources"]
+                    :ns-default build}
+
+            :dev   {:extra-paths ["development/src"]
 
                   :extra-deps {poly/user {:local/root "components/user"}
                                poly/cli {:local/root "bases/cli"}
