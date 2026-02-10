@@ -17,13 +17,15 @@
               :swagger {:info {:title       "Centripetal Network"
                                :description "Indicators API"}}
               :handler (swagger/create-swagger-handler)}}]
-      ["/" {:get index/handler, :name ::index}]
       ["/healthcheck" {:get healthcheck/handler, :name ::healthcheck}]
-      ["/api"
-       ["/account/:id/re-send-invite" {:put  re-send-invite/handler
-                                       :name ::re-send-invite}]
-       ["/account/:id/re-send-new-email-invite" {:put  re-send-new-email-invite/handler
-                                                 :name ::re-send-new-email-invite}]]])
+      ["/indicators"
+       ;["" {:get {:handler (handlers/get-all-indicators-handler conn)}}]
+       ["/search" {:post {:handler 0 #_(handlers/search-indicators-handler conn)}}]
+       ["/types" {:get {:handler 0 #_(handlers/get-types-handler conn)}}]
+       ["/authors" {:get {:handler 0 #_ (handlers/get-authors-handler conn)}}]
+       ["/:id" {:get {:parameters {}
+                      :handler 0 #_ (handlers/get-indicator-by-id-handler conn)}}]]])
+
    (ring/routes
      (swagger-ui/create-swagger-ui-handler
        {:path   "/api-docs"

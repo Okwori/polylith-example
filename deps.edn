@@ -5,10 +5,11 @@
 
             :dev   {:extra-paths ["development/src"]
 
-                    :extra-deps  {poly/user                  {:local/root "components/user"}
+                    :extra-deps  {poly/app-state             {:local/root "components/app_state"}
                                   poly/persistence           {:local/root "components/persistence"}
                                   poly/server                {:local/root "components/server"}
-                                  poly/service                {:local/root "components/service"}
+                                  poly/service               {:local/root "components/service"}
+                                  poly/user                  {:local/root "components/user"}
 
                                   poly/cli                   {:local/root "bases/cli"}
 
