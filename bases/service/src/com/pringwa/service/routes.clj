@@ -1,7 +1,9 @@
 (ns com.pringwa.service.routes
   (:require [clojure.java.io :as io]
             [com.pringwa.service.handler.healthcheck :as healthcheck]
+            [com.pringwa.service.handler.filter-indicators :as filter-indicators]
             [com.pringwa.service.handler.indicator :as indicator]
+            [com.pringwa.service.handler.indicators :as indicators]
             [muuntaja.core :as m]
             [reitit.ring :as ring]
             [reitit.ring.coercion :as coercion]
@@ -20,13 +22,10 @@
               :handler (swagger/create-swagger-handler)}}]
       ["/healthcheck" {:get healthcheck/handler, :name ::healthcheck}]
       ["/indicators"
-       ["/search" {:post {:handler (fn [req] {:status 200
-                                              :body   [{:x 1 :y 2} {:a 2} [1 2 3]]}) #_(handlers/search-indicators-handler conn)}}]
-       ["/:id" {:get {:handler indicator/handler,  :name ::indicator}}]
-       ;["/types" {:get {:handler #() #_(handlers/get-types-handler conn)}}]
-       ;["/authors" {:get {:handler #() #_ (handlers/get-authors-handler conn)}}]
-       ;["/:id" {:get {:handler #() #_ (handlers/get-indicator-by-id-handler conn)}}]
-       ]]
+       ["" {:get {:handler indicators/handler :name ::indicators}}]
+       ["/search" {:post {:handler filter-indicators/handler :name ::filter-indicator}}]
+       ["/:id" {:get {:handler indicator/handler,  :name ::indicator}}]]]
+
      {:conflicts nil
       :data      {:muuntaja     m/instance
                   :middleware   [swagger/swagger-feature
