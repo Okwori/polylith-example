@@ -1,0 +1,13 @@
+{:deps {org.clojure/clojure {:mvn/version "1.12.4"}
+
+        poly/app-state             {:local/root "../../components/app_state"}
+        poly/persistence           {:local/root "../../components/persistence"}
+        poly/server                {:local/root "../../components/server"}
+        poly/cli                   {:local/root "../../bases/service"}}
+
+ :aliases {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.12"}
+                          org.clojure/tools.deps        {:mvn/version "0.28.1578"}}
+                   :paths ["build/resources"]
+                   :ns-default build}
+           :test {:extra-paths []
+                  :extra-deps  {}}}}

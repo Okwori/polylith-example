@@ -1,25 +1,14 @@
-{:aliases  {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.12"}
-                           org.clojure/tools.deps        {:mvn/version "0.28.1578"}}
-                    :paths ["build/resources"]
-                    :ns-default build}
-
-            :dev   {:extra-paths ["development/src"]
+{:aliases  {:dev   {:extra-paths ["development/src"]
 
                     :extra-deps  {poly/app-state             {:local/root "components/app_state"}
                                   poly/persistence           {:local/root "components/persistence"}
                                   poly/server                {:local/root "components/server"}
-                                  poly/service               {:local/root "components/service"}
-                                  poly/user                  {:local/root "components/user"}
 
-                                  poly/cli                   {:local/root "bases/cli"}
+                                  poly/service               {:local/root "bases/service"}
 
                                   org.clojure/clojure        {:mvn/version "1.12.4"}}
 
                                   com.stuartsierra/component {:mvn/version "1.2.0"}}
-
-            ;:check {:extra-deps {io.github.athos/clj-check {:git/tag "0.1.0" :git/sha "0ca84df"}}
-            ;        :main-opts ["-m" "clj-check.check"
-            ;                    "components/user/src"]}
 
             :outdated {:main-opts  ["-m" "antq.core"]
                        :extra-deps {com.github.liquidz/antq {:mvn/version "2.11.1276"}}}

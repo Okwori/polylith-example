@@ -8,8 +8,8 @@
             [com.stuartsierra.component :as component]))
 
 (defn new-system
-  ([config] (new-system config true))
-  ([config port]
+  ([config] (new-system true config))
+  ([port config]
    (component/system-map
      ;:datomic/client ()
      ;:datomic/conn (db/create (-> config :database))
@@ -22,6 +22,9 @@
        (aero/read-config)))
 
 (defn -main [& [port]]
-  (->> (config)
-       (new-system)
-       (component/start)))
+  (let [port (or port (get (System/getenv) "PORT" 8080))
+        port (cond-> port (string? port) Integer/parseInt)
+        _ (println "Starting up on port" port)]
+    (->> (config)
+         (new-system port)
+         (component/start))))
