@@ -11,7 +11,8 @@
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
             [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]))
+            [reitit.swagger-ui :as swagger-ui]
+            [spec-tools.data-spec :as ds]))
 
 (defn router []
   (ring/ring-handler
@@ -23,9 +24,11 @@
               :handler (swagger/create-swagger-handler)}}]
       ["/healthcheck" {:get healthcheck/handler, :name ::healthcheck}]
       ["/indicators"
-       ["" {:get {:handler indicators/handler :name ::indicators}}]
+       ["" {:get {:handler indicators/handler :name ::indicators
+                  :parameters {:query {:type string?}}}}]
        ["/search" {:post {:handler filter-indicators/handler :name ::filter-indicator}}]
-       ["/:id" {:get {:handler indicator/handler, :name ::indicator}}]]]
+       ["/:id" {:get {:handler indicator/handler, :name ::indicator
+                      :parameters {:path {:id string?}}}}]]]
 
      {:conflicts nil
       :data      {:muuntaja     m/instance
