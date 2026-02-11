@@ -3,7 +3,7 @@
             [com.pringwa.persistence.interface :as store]))
 
 (defn handler
-  [{:keys [reitit.core/match multipart-params conn] :as req}]
+  [{:keys [reitit.core/match] :as req}]
   (let [id (-> match :path-params :id)
         conn (:conn (store/init-db))]
     {:status 200
