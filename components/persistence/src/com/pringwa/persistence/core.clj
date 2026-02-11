@@ -12,15 +12,12 @@
                               :storage-dir :mem
                               :system "indicators"})
             db-name "indicators"
+            _ (d/create-database client {:db-name db-name})
             conn (d/connect client {:db-name db-name})]
-        (d/create-database client {:db-name db-name})
-       (assoc this :conn conn))))
+        (assoc this :conn conn))))
 
   (stop [this]
-    (assoc this :conn nil))
-
-  clojure.lang.IFn
-  (invoke [_] conn))
+    (assoc this :conn nil)))
 
 (defn create-conn
   [{:keys [conn]}]
