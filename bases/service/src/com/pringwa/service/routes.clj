@@ -1,5 +1,6 @@
 (ns com.pringwa.service.routes
   (:require [clojure.java.io :as io]
+            [com.pringwa.persistence.interface :as db]
             [com.pringwa.service.handler.healthcheck :as healthcheck]
             [com.pringwa.service.handler.filter-indicators :as filter-indicators]
             [com.pringwa.service.handler.indicator :as indicator]
@@ -24,7 +25,7 @@
       ["/indicators"
        ["" {:get {:handler indicators/handler :name ::indicators}}]
        ["/search" {:post {:handler filter-indicators/handler :name ::filter-indicator}}]
-       ["/:id" {:get {:handler indicator/handler,  :name ::indicator}}]]]
+       ["/:id" {:get {:handler indicator/handler, :name ::indicator}}]]]
 
      {:conflicts nil
       :data      {:muuntaja     m/instance
