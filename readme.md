@@ -1,13 +1,43 @@
-<img src="logo.png" width="30%" alt="Polylith" id="logo">
+# Centripetal Network Assigment
+Your objective is to build a simple JSON based REST Microservice. The service will provide search capabilities 
+on an open source intelligence feed provided by AlienVault OTX. REST and microservices are fairly common, 
+the goal here is to show how this might be done in a Clojure application using its functional capabilities.
 
-The Polylith documentation can be found here:
+## Stack
+[Clojure](https://clojure.org/), [Datomic DB Local](https://docs.datomic.com/datomic-local.html), [Polylith Architecture](https://github.com/polyfy/polylith)  
+## Running
+### Docker
+#### Build
+```shell
+docker build -t service .
+```
+#### Run
+```shell
+docker run -p 8080:8080 service
+```
 
-- The [high-level documentation](https://polylith.gitbook.io/polylith)
-- The [poly tool documentation](https://cljdoc.org/d/polylith/clj-poly/CURRENT)
-- The [RealWorld example app documentation](https://github.com/furkan3ayraktar/clojure-polylith-realworld-example-app/tree/cljs-frontend)
+## Usage
+#### API UI
+[http://localhost:8080/api-docs/](http://localhost:8080/api-docs/#/)
 
-You can also get in touch with the Polylith Team on [Slack](https://clojurians.slack.com/archives/C013B7MQHJQ).
+#### Endpoints
+* GET /indicators/:id
+```shell
+curl http://localhost:8080/indicators/5b433d8fe822e72e3c57d26c
+```
+* GET /indicators
+```shell
+curl http://localhost:8080/indicators
+```
+* GET /indicators?type=IPv4
+```shell
+curl "http://localhost:8080/indicators?type=IPv4"
+```
+* POST /indicators/search
+```shell
+curl -X POST http://localhost:8080/indicators/search \
+  -H "Content-Type: application/json" \
+  -d '{"adversary": "Plead"}'
+```
 
-<h1>polylith-example</h1>
-
-<p>Add your workspace documentation here...</p>
+Crafter: Simon Okwori
