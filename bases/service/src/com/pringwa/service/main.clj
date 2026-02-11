@@ -3,8 +3,8 @@
             [clojure.java.io :as io]
             [com.pringwa.app-state.interface :as app-state]
             [com.pringwa.persistence.interface :as db]
-            [com.pringwa.service.routes :as routes]
             [com.pringwa.server.interface :as server]
+            [com.pringwa.service.routes :as routes]
             [com.stuartsierra.component :as component]))
 
 (defn new-system
