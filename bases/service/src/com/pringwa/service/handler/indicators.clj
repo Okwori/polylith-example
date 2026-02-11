@@ -1,7 +1,10 @@
-(ns com.pringwa.service.handler.indicators)
+(ns com.pringwa.service.handler.indicators
+  (:require [com.pringwa.persistence.interface :as store]
+            [datomic.client.api :as d]))
 
 (defn handler
-  [{:keys [reitit.core/match]}]
-  (let [id (-> match :path-params :id Long/parseLong)]
+  [{:keys [conn]}]
+  (let [conn (:conn (store/init-db))]
     {:status 200
-     :body   {:result id}}))
+     :body   {:result (-> (store/findAllDocuments (d/db conn))
+                          store/transform-keys)}}))
