@@ -8,14 +8,20 @@
 (defn slurp-data! [conn filename batch-size]
   (util/slurp-data! conn filename batch-size))
 
+(defn matches? [document criteria]
+  (util/matches? document criteria))
+
 (defn transform-keys [m]
   (util/transform-keys m))
 
-(defn findDocument [db id]
-  (model/findDocument db id))
+(defn find-document [db id]
+  (model/find-document db id))
 
-(defn findAllDocuments [db]
-  (model/findAllDocuments db))
+(defn find-all-documents [db]
+  (model/find-all-documents db))
+
+(defn find-document-by-type [db type]
+  (model/find-document-by-type db type))
 
 (defn conn
   [config]
