@@ -38,6 +38,10 @@ curl "http://localhost:8080/indicators?type=IPv4"
 curl -X POST http://localhost:8080/indicators/search \
   -H "Content-Type: application/json" \
   -d '{"adversary": "Plead"}'
+  
+curl -X POST http://localhost:8080/indicators/search \
+  -H "Content-Type: application/json" \
+  -d '{"author_name": "AlienVault"}'
 ```
 
 Crafter: Simon Okwori
