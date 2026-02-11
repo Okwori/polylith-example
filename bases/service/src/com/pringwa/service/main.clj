@@ -11,8 +11,7 @@
   ([config] (new-system config true))
   ([config port]
    (component/system-map
-     ;:datomic/client ()
-     ;:datomic/conn (db/create (-> config :database))
+     :conn (db/conn config)
      :app-state (app-state/create config)
      :server (server/create #'routes/router))))
 
