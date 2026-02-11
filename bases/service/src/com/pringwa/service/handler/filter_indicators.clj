@@ -1,10 +1,13 @@
 (ns com.pringwa.service.handler.filter-indicators
-  ;(:require [])
-  )
-
+  (:require [com.pringwa.persistence.interface :as db]
+            [datomic.client.api :as d]))
 
 (defn handler
-  [{:keys [reitit.core/match]}]
-  (let [id (-> match :path-params :id Long/parseLong)]
-    {:status 200
-     :body   {:result id}}))
+  [{:keys [reitit.core/match conn]}]
+  {:status 200
+   :body   {:result conn
+            :db-result (let [conn (d/connect (d/client {:server-type :datomic-local
+                                                   :storage-dir :mem
+                                                   :system      "indicators"})
+                                        {:db-name "indicators"})]
+                         (d/q '[:find ?v :where [?e :db/ident ?v]] (d/db conn)))}})

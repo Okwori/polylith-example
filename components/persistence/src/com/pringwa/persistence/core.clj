@@ -1,5 +1,6 @@
 (ns com.pringwa.persistence.core
-  (:require [com.stuartsierra.component :as component]
+  (:require [com.pringwa.persistence.util :as util]
+            [com.stuartsierra.component :as component]
             [datomic.client.api :as d]))
 
 (defrecord Database [conn]
@@ -8,13 +9,10 @@
   (start [this]
     (if conn
       this
-      (let [client (d/client {:server-type :datomic-local
-                              :storage-dir :mem
-                              :system "indicators"})
-            db-name "indicators"
-            _ (d/create-database client {:db-name db-name})
-            conn (d/connect client {:db-name db-name})]
-        (assoc this :conn conn))))
+      (let [db-map (util/init-db util/db-name)
+            ;{:keys [conn]} db-map
+            _ (util/slurp-data! (:conn db-map) "persistence/indicators.json" 3)]
+        (assoc this :conn (:conn db-map)))))
 
   (stop [this]
     (assoc this :conn nil)))
@@ -22,4 +20,3 @@
 (defn create-conn
   [{:keys [conn]}]
   (map->Database {:conn conn}))
-
