@@ -5,7 +5,8 @@
             [com.pringwa.persistence.interface :as db]
             [com.pringwa.server.interface :as server]
             [com.pringwa.service.routes :as routes]
-            [com.stuartsierra.component :as component]))
+            [com.stuartsierra.component :as component])
+  (:gen-class))
 
 (defn new-system
   ([config] (new-system config true))
