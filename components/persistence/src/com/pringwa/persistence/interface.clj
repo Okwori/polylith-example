@@ -7,6 +7,9 @@
 (defn slurp-data! [conn filename batch-size]
   (util/slurp-data! conn filename batch-size))
 
+(defn transform-keys [m]
+  (util/transform-keys m))
+
 (defn conn
   [config]
   (db/create-conn config))

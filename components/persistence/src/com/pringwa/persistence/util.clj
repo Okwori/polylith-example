@@ -66,3 +66,17 @@
         conn (create-database client db-name)]
     (schema/install-schema! conn)
     {:client client :conn conn :db-name db-name}))
+
+(defn transform-keys [m]
+  (cond
+    (map? m)
+    (into {}
+          (map (fn [[k v]]
+                 [(if (keyword? k) (keyword (name k)) k)
+                  (transform-keys v)])
+               m))
+
+    (sequential? m)
+    (mapv transform-keys m)
+
+    :else m))
