@@ -17,10 +17,10 @@ docker run -p 8080:8080 service
 ```
 
 ## Usage
-#### API UI
+### API UI
 [http://localhost:8080/api-docs/](http://localhost:8080/api-docs/#/)
 
-#### Endpoints
+### Endpoints
 * GET /indicators/:id
 ```shell
 curl http://localhost:8080/indicators/5b433d8fe822e72e3c57d26c
@@ -43,5 +43,11 @@ curl -X POST http://localhost:8080/indicators/search \
   -H "Content-Type: application/json" \
   -d '{"author_name": "AlienVault"}'
 ```
+
+## Testing
+```shell
+clojure -M:poly test
+```
+
 
 Crafter: Simon Okwori
