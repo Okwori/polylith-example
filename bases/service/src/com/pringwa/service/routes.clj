@@ -1,7 +1,5 @@
 (ns com.pringwa.service.routes
-  (:require [clojure.java.io :as io]
-            [com.pringwa.persistence.interface :as db]
-            [com.pringwa.service.handler.healthcheck :as healthcheck]
+  (:require [com.pringwa.service.handler.healthcheck :as healthcheck]
             [com.pringwa.service.handler.filter-indicators :as filter-indicators]
             [com.pringwa.service.handler.indicator :as indicator]
             [com.pringwa.service.handler.indicators :as indicators]
@@ -11,8 +9,7 @@
             [reitit.ring.middleware.muuntaja :as muuntaja]
             [reitit.ring.middleware.parameters :as parameters]
             [reitit.swagger :as swagger]
-            [reitit.swagger-ui :as swagger-ui]
-            [spec-tools.data-spec :as ds]))
+            [reitit.swagger-ui :as swagger-ui]))
 
 (defn router []
   (ring/ring-handler
