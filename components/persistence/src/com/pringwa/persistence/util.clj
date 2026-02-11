@@ -80,3 +80,16 @@
     (mapv transform-keys m)
 
     :else m))
+
+(defn matches? [document criteria]
+  (every? (fn [[k v]]
+            (let [db-key   (keyword "document" (name k))
+                  db-value (get document db-key)]
+              (cond
+                (vector? db-value)
+                (if (vector? v)
+                  (some (set db-value) v)
+                  (contains? (set db-value) v))
+                :else
+                (= db-value v))))
+          criteria))
