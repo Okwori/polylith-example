@@ -7,6 +7,7 @@ the goal here is to show how this might be done in a Clojure application using i
 ### Tools
 * [Java 17+](https://adoptium.net/en-GB/temurin/releases?version=25&os=any&arch=any)
 * [Clojure](https://clojure.org/reference/clojure_cli) 
+* [Docker](https://www.docker.com/get-started/)
 ### Helpful Libs
 * [Datomic DB Local](https://docs.datomic.com/datomic-local.html)
 * [Polylith Architecture](https://github.com/polyfy/polylith)
