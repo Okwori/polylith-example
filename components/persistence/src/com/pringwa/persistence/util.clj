@@ -42,15 +42,14 @@
     (into {} (filter (comp some? val) m))))
 
 (defn slurp-data!
-[conn filename batch-size]
-(if-let [res (io/resource filename)]
-  (with-open [reader (io/reader res)]
-    (let [data (json/read reader)]
-      (doseq [batch (partition-all batch-size data)]
-        (let [tx-data (mapv map->document-tx batch)]
-          (d/transact conn {:tx-data tx-data})
-          (println "Transacted batch of" (count batch))))))
-  (println "Resource not found:" filename)))
+  [conn filename batch-size]
+  (if-let [res (io/resource filename)]
+    (with-open [reader (io/reader res)]
+      (let [data (json/read reader)]
+        (doseq [batch (partition-all batch-size data)]
+          (let [tx-data (mapv map->document-tx batch)]
+            (d/transact conn {:tx-data tx-data})))))
+    (println "Resource not found:" filename)))
 
 (defn create-client []
   (d/client {:server-type :datomic-local
