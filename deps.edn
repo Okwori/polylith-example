@@ -19,8 +19,7 @@
                        :extra-deps {com.github.liquidz/antq {:mvn/version "2.11.1276"}}}
 
             :test {:main-opts ["-m" "speclj.main" "-c"]
-                   :extra-paths ["test" "spec"  "bases/service/spec" "bases/service/test"
-                                 ]
+                   :extra-paths ["test" "spec"  "bases/service/spec" "bases/service/test"]
                    :extra-deps  {speclj/speclj {:mvn/version "3.12.0"}}}
 
             :poly {:main-opts  ["-m" "polylith.clj.core.poly-cli.core"]
