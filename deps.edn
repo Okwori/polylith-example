@@ -24,4 +24,7 @@
 
             :poly {:main-opts  ["-m" "polylith.clj.core.poly-cli.core"]
                    :jvm-opts   ["--enable-native-access=ALL-UNNAMED"]
-                   :extra-deps {polylith/clj-poly {:mvn/version "0.3.32"}}}}}
+                   :extra-deps {polylith/clj-poly {:mvn/version "0.3.32"}}}
+
+            :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.16.0"}}
+                     :main-opts ["-m" "cljfmt.main"]}}}
