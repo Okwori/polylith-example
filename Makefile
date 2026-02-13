@@ -40,7 +40,7 @@ clean: ## Clean build artifacts
 
 build: clean ## Build uberjar
 	@echo "🔨 Building uberjar..."
-	clojure -T:build uber :project service
+	clojure -T:build uberjar :project service
 	@echo "✅ Built: $(JAR_FILE)"
 
 # ==============================================================================
