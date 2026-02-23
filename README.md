@@ -129,7 +129,6 @@ make test
 * [meetup](https://www.youtube.com/watch?v=_tpNKAv4fro)
 * [polylith-gitbook](https://polylith.gitbook.io/polylith/)
 * [usermanager-example](https://github.com/seancorfield/usermanager-example/tree/polylith)
-* [serefayar/ayatori](https://github.com/serefayar/ayatori)
 * [furkan3ayraktar/clojure-polylith-realworld-example-app](https://github.com/furkan3ayraktar/clojure-polylith-realworld-example-app)
 * [clojure-doc](https://clojure-doc.org/)
 * AI tools for certain syntax reminder and unit tests
