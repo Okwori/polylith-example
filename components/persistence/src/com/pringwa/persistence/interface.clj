@@ -5,9 +5,6 @@
 
 (defn init-db [] (util/init-db util/db-name))
 
-(defn slurp-data! [conn filename batch-size]
-  (util/slurp-data! conn filename batch-size))
-
 (defn matches? [document criteria]
   (util/matches? document criteria))
 
