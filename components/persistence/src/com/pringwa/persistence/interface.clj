@@ -5,6 +5,9 @@
 
 (defn init-db [] (util/init-db util/db-name))
 
+(defn slurp-data! [conn filename batch-size]
+  (util/slurp-data! conn filename batch-size))
+
 (defn matches? [document criteria]
   (util/matches? document criteria))
 
@@ -20,6 +23,6 @@
 (defn find-document-by-type [db type]
   (model/find-document-by-type db type))
 
-(defn create
+(defn conn
   [config]
-  (db/new-database config))
+  (db/create-conn config))
