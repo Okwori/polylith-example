@@ -2,7 +2,8 @@
   (:require [clojure.java.io :as io]
             [clojure.test :refer [deftest testing is]]
             [com.pringwa.persistence.util :as util]
-            [com.pringwa.persistence.schema :as schema])
+            [com.pringwa.persistence.schema :as schema]
+            [datomic.client.api :as d])
   (:import (java.util Date)))
 
 (deftest parse-date-test
@@ -265,26 +266,63 @@
       (is (not (util/matches? document {:name "Wrong Name"}))))))
 
 (deftest init-db-test
-  (testing "returns map with client, conn, and db-name"
-    (with-redefs [util/create-client (constantly :mock-client)
-                  util/create-database (constantly :mock-conn)
-                  schema/install-schema! (constantly nil)]
-      (let [result (util/init-db "test-db")]
-        (is (= :mock-client (:client result)))
-        (is (= :mock-conn (:conn result)))
-        (is (= "test-db" (:db-name result)))))))
+  (testing "creates client, database connection, installs schema, and returns result map"
+    (let [client-config {:server-type :datomic-local
+                         :storage-dir :mem
+                         :system "indicators"}
+          db-config {:db-name "test-db"}
+          captured-client (atom nil)
+          captured-db (atom nil)
+          schema-called (atom false)]
+      (with-redefs [util/create-client
+                    (fn [cfg]
+                      (reset! captured-client cfg)
+                      :mock-client)
+                    util/create-database
+                    (fn [client db-name]
+                      (reset! captured-db [client db-name])
+                      :mock-conn)
+                    schema/install-schema!
+                    (fn [conn]
+                      (reset! schema-called conn))]
+        (let [result (util/init-db {:client client-config
+                                    :database db-config})]
+          (is (= client-config @captured-client))
+          (is (= [:mock-client "test-db"] @captured-db))
+          (is (= :mock-conn @schema-called))
+          (is (= {:client :mock-client
+                  :conn :mock-conn
+                  :db-name "test-db"}
+                 result)))))))
 
 (deftest create-client-test
-  (testing "creates client with correct config"
-    (let [client-config (atom nil)]
-      (with-redefs [util/create-client
-                    (fn []
-                      (reset! client-config {:server-type :datomic-local
-                                             :storage-dir :mem
-                                             :system "indicators"})
-                      :mock-client)]
-        (let [result (util/create-client)]
-          (is (= :mock-client result)))))))
+  (testing "delegates to datomic client with correct config"
+    (let [captured (atom nil)]
+      (with-redefs [d/client (fn [cfg]
+                               (reset! captured cfg)
+                               :mock-client)]
+        (let [config {:server-type :datomic-local
+                      :storage-dir :mem
+                      :system "indicators"}
+              result (util/create-client config)]
+          (is (= :mock-client result))
+          (is (= config @captured)))))))
+
+(deftest create-database-test
+  (testing "creates and connects to database"
+    (let [created (atom nil)
+          connected (atom nil)]
+      (with-redefs [d/create-database (fn [client opts]
+                                        (reset! created [client opts]))
+                    d/connect (fn [client opts]
+                                (reset! connected [client opts])
+                                :mock-conn)]
+        (let [client :mock-client
+              db-name "test-db"
+              result (util/create-database client db-name)]
+          (is (= :mock-conn result))
+          (is (= [client {:db-name db-name}] @created))
+          (is (= [client {:db-name db-name}] @connected)))))))
 
 (deftest slurp-data-test
   (testing "prints error when resource not found"

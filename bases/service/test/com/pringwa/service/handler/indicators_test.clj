@@ -37,35 +37,35 @@
                   :id 2}]}])
 
 (deftest get-all-indicators-test
-         (testing "returns all documents with status 200"
-                  (with-redefs [store/init-db (constantly {:conn :mock-conn})
-                                d/db (constantly :mock-db)
-                                store/find-all-documents (constantly mock-documents)
-                                store/transform-keys (constantly transformed-documents)]
-                    (let [request {:query-params {}}
-                          response (indicators/handler request)]
-                      (is (= 200 (:status response)))
-                      (is (contains? (:body response) :result)))))
+  (testing "returns all documents with status 200"
+    (with-redefs [d/db (constantly :mock-db)
+                  store/find-all-documents (constantly mock-documents)
+                  store/transform-keys (constantly transformed-documents)]
+      (let [request {:conn :mock-conn
+                     :query-params {}}
+            response (indicators/handler request)]
+        (is (= 200 (:status response)))
+        (is (contains? (:body response) :result)))))
 
-         (testing "returns empty result when no documents exist"
-                  (with-redefs [store/init-db (constantly {:conn :mock-conn})
-                                d/db (constantly :mock-db)
-                                store/find-all-documents (constantly [])
-                                store/transform-keys (constantly [])]
-                    (let [request {:query-params {}}
-                          response (indicators/handler request)]
-                      (is (= 200 (:status response)))
-                      (is (= {:result []} (:body response))))))
+  (testing "returns empty result when no documents exist"
+    (with-redefs [d/db (constantly :mock-db)
+                  store/find-all-documents (constantly [])
+                  store/transform-keys (constantly [])]
+      (let [request {:conn :mock-conn
+                     :query-params {}}
+            response (indicators/handler request)]
+        (is (= 200 (:status response)))
+        (is (= {:result []} (:body response))))))
 
-         (testing "calls find-all-documents when type is empty string"
-                  (let [find-all-called? (atom false)]
-                    (with-redefs [store/init-db (constantly {:conn :mock-conn})
-                                  d/db (constantly :mock-db)
-                                  store/find-all-documents (fn [_]
-                                                             (reset! find-all-called? true)
-                                                             mock-documents)
-                                  store/transform-keys (constantly transformed-documents)]
-                      (let [request {:query-params {"type" ""}}
-                            response (indicators/handler request)]
-                        (is (= 200 (:status response)))
-                        (is @find-all-called?))))))
+  (testing "calls find-all-documents when type is empty string"
+    (let [find-all-called? (atom false)]
+      (with-redefs [d/db (constantly :mock-db)
+                    store/find-all-documents (fn [_]
+                                               (reset! find-all-called? true)
+                                               mock-documents)
+                    store/transform-keys (constantly transformed-documents)]
+        (let [request {:conn :mock-conn
+                       :query-params {"type" ""}}
+              response (indicators/handler request)]
+          (is (= 200 (:status response)))
+          (is @find-all-called?))))))

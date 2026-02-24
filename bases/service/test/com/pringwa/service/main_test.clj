@@ -1,5 +1,1 @@
-(ns com.pringwa.service.main-test
-  (:require [clojure.test :refer [deftest is]]))
-
-(deftest dummy-test
-  (is (= 1 1)))
+(ns com.pringwa.service.main-test)
