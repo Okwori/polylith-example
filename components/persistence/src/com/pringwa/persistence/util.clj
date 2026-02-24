@@ -6,8 +6,6 @@
             [com.pringwa.persistence.schema :as schema]
             [datomic.client.api :as d]))
 
-(def db-name "indicators")
-
 (defn- parse-date [inst-str]
   (try
     (if inst-str (instant/read-instant-date inst-str) nil)
