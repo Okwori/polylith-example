@@ -5,7 +5,6 @@
         com.stuartsierra/component {:mvn/version "1.2.0"}
         org.slf4j/slf4j-simple     {:mvn/version "2.0.17"}
 
-        poly/app-state             {:local/root "../../components/app_state"}
         poly/persistence           {:local/root "../../components/persistence"}
         poly/server                {:local/root "../../components/server"}
         poly/service               {:local/root "../../bases/service"}}

@@ -4,8 +4,7 @@
                     :ns-default build}
             :dev   {:extra-paths ["development/src"]
 
-                    :extra-deps  {poly/app-state             {:local/root "components/app_state"}
-                                  poly/persistence           {:local/root "components/persistence"}
+                    :extra-deps  {poly/persistence           {:local/root "components/persistence"}
                                   poly/server                {:local/root "components/server"}
 
                                   poly/service               {:local/root "bases/service"}
