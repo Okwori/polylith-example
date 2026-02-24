@@ -2,6 +2,5 @@
   (:require [com.pringwa.server.core :as server]))
 
 (defn create
-  [handler-fn]
-  (server/create handler-fn))
-
+  [router config]
+  (server/create router config))

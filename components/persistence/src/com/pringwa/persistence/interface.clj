@@ -3,8 +3,6 @@
             [com.pringwa.persistence.model :as model]
             [com.pringwa.persistence.util :as util]))
 
-(defn init-db [] (util/init-db util/db-name))
-
 (defn matches? [document criteria]
   (util/matches? document criteria))
 
@@ -20,6 +18,6 @@
 (defn find-document-by-type [db type]
   (model/find-document-by-type db type))
 
-(defn conn
+(defn create
   [config]
-  (db/create-conn config))
+  (db/new-database config))

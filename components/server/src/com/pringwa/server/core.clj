@@ -1,29 +1,30 @@
 (ns com.pringwa.server.core
   (:require [clojure.tools.logging :as log]
+            [com.pringwa.server.middleware :refer [wrap-connection]]
             [com.stuartsierra.component :as component]
             [ring.adapter.jetty :refer [run-jetty]]))
 
-(defrecord WebServer [handler-fn
-                      app-state
-                      server]
+(defrecord WebServer [handler-fn database config server]
   component/Lifecycle
+
   (start [this]
     (if server
       this
-      (let [{:keys [host port]} (or (-> app-state :config :server) {:host "localhost" :port 8080})]
-        (log/infof "web server running at %s:%s" host port)
-        (assoc this
-          :http-server (run-jetty (handler-fn)
-                             {:port port :join? false})))))
+      (let [{:keys [host port] :or {host "localhost" port 8080}} (:server config)
+            conn (:conn database)
+            base-handler (handler-fn)
+            handler (wrap-connection base-handler conn)
+            http-srv (run-jetty handler {:host host :port port :join? false})]
+        (log/infof "Web server running at %s:%s" host port)
+        (assoc this :server http-srv))))
+
   (stop [this]
-    (if server
-      (do
-        (.stop server)
-        (assoc this :server nil))
-      this)))
+    (when server
+      (.stop server))
+    (assoc this :server nil)))
 
 (defn create
-  [handler-fn]
-  (component/using (map->WebServer {:handler-fn handler-fn})
-                   []))
-
+  [router config]
+  (component/using (map->WebServer {:handler-fn router
+                                    :config config})
+                   [:database]))

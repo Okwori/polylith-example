@@ -2,6 +2,7 @@
   (:require [clojure.java.io :as io]
             [clojure.data.json :as json]
             [clojure.instant :as instant]
+            [clojure.tools.logging :as log]
             [com.pringwa.persistence.schema :as schema]
             [datomic.client.api :as d]))
 
@@ -47,24 +48,24 @@
     (with-open [reader (io/reader res)]
       (let [data (json/read reader)]
         (doseq [batch (partition-all batch-size data)]
-          (let [tx-data (mapv map->document-tx batch)]
+          (let [tx-data (vec (concat (mapv map->document-tx batch)
+                                     [{:transaction/namespace "com.pringwa.persistence.util"}]))]
             (d/transact conn {:tx-data tx-data})))))
-    (println "Resource not found:" filename)))
+    (log/infof "Resource not found: %s" filename)))
 
-(defn create-client []
-  (d/client {:server-type :datomic-local
-             :storage-dir :mem
-             :system "indicators"}))
+(defn create-client [client-map]
+  (d/client client-map))
 
 (defn create-database [client db-name]
   (d/create-database client {:db-name db-name})
   (d/connect client {:db-name db-name}))
 
-(defn init-db [db-name]
-  (let [client (create-client)
-        conn (create-database client db-name)]
+(defn init-db [{:keys [client database]} ]
+  (let [{:keys [db-name]} database
+        db-client (create-client client)
+        conn (create-database db-client db-name)]
     (schema/install-schema! conn)
-    {:client client :conn conn :db-name db-name}))
+    {:client db-client :conn conn :db-name db-name}))
 
 (defn transform-keys [m]
   (cond

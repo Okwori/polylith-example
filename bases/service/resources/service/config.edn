@@ -1,3 +1,11 @@
-{:server {:host #or [#env HOST "localhost"]
-          :port #long #or [#env PORT 3000]}
- :database {:conn {}}}
+{:client   {:server-type :datomic-local
+            :storage-dir :mem
+            :system      "indicators"}
+
+ :data     {:filename   "persistence/indicators.json"
+            :batch-size 3}
+
+ :database {:db-name "indicators"}
+
+ :server   {:host #or [#env HOST "localhost"]
+            :port #long #or [#env PORT 8080]}}

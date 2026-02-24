@@ -47,4 +47,3 @@
                         [?indicators :indicator/type ?type-str]]}
         result (d/q {:query query, :args [db type document-pattern]})]
     (mapv first result)))
-

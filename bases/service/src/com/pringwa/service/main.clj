@@ -1,7 +1,7 @@
 (ns com.pringwa.service.main
   (:require [aero.core :as aero]
             [clojure.java.io :as io]
-            [com.pringwa.app-state.interface :as app-state]
+            [clojure.tools.logging :as log]
             [com.pringwa.persistence.interface :as db]
             [com.pringwa.server.interface :as server]
             [com.pringwa.service.routes :as routes]
@@ -9,22 +9,20 @@
   (:gen-class))
 
 (defn new-system
-  ([config] (new-system config true))
-  ([config port]
-   (component/system-map
-     :conn (db/conn config)
-     :app-state (app-state/create config)
-     :server (server/create #'routes/router))))
+  [config]
+  (component/system-map
+    :database (db/create config)
+    :server (server/create #'routes/router config)))
 
 (defn config
   []
   (->> (io/resource "service/config.edn")
        (aero/read-config)))
 
-(defn -main [& [port]]
-  (let [port (or port (get (System/getenv) "PORT" 8080))
-        port (cond-> port (string? port) Integer/parseInt)
-        _ (println "Starting up on port" port)]
+(defn -main [& [host port]]
+  (let [host (or host "localhost")
+        port (or (cond-> port (string? port) Integer/parseInt) 8080)
+        _ (log/infof "Starting up on port %s:%s" host port)]
     (->> (config)
          (new-system)
          (component/start))))
