@@ -44,7 +44,7 @@ make docker-stop
 ### Endpoints
 * GET _/indicators/:id_ :
 Note: This currently uses `document/id`, which is the top-level string ID.
-Alternatively, `indicator/id` (a long value within the inner vector) could be what is expected.
+Alternatively, `indicator/id` (a long value within the inner vector) could be what is expected?
 ```shell
 # curl http://localhost:8080/indicators/5b433d8fe822e72e3c57d26c
 make api-indicator ID=5b3cb789bd391e24a8b1dc53
