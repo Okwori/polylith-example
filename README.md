@@ -79,7 +79,7 @@ Search Criteria Options
 | `author_name`        | string          | `{"author_name": "AlienVault"}`                     |
 | `tags`               | string or array | `{"tags": "china"}` or `{"tags": ["china", "apt"]}` |
 | `industries`         | string or array | `{"industries": "tech"}`                            |
-| `targeted_countries` | string or array | `{"targeted_countries": "TW"}`                      |
+| `targeted_countries` | string or array | `{"targeted_countries": "Kuwait"}`                  |
 | `revision`           | number          | `{"revision": 1}`                                   |
 | `public`             | number (0 or 1) | `{"public": 1}`                                     |
 
