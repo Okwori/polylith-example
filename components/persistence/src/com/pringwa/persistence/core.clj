@@ -9,8 +9,7 @@
     (if conn
       this
       (let [{{:keys [filename batch-size]} :data
-             {:keys [_] :as database} :database
-             {:keys [_] :as client} :client} config
+             {:keys [client] :as database} :database} config
             {:keys [conn]} (util/init-db {:client client :database database})
             _ (util/slurp-data! conn filename batch-size)]
         (assoc this :conn conn))))
