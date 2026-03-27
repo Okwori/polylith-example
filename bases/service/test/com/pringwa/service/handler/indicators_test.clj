@@ -45,9 +45,9 @@
                      :query-params {}}
             response (indicators/handler request)]
         (is (= 200 (:status response)))
-        (is (contains? (:body response) :result)))))
+        (is (contains? (:body response) :results)))))
 
-  (testing "returns empty result when no documents exist"
+  (testing "returns empty results when no documents exist"
     (with-redefs [d/db (constantly :mock-db)
                   store/find-all-documents (constantly [])
                   store/transform-keys (constantly [])]
@@ -55,7 +55,7 @@
                      :query-params {}}
             response (indicators/handler request)]
         (is (= 200 (:status response)))
-        (is (= {:result []} (:body response))))))
+        (is (= {:results []} (:body response))))))
 
   (testing "calls find-all-documents when type is empty string"
     (let [find-all-called? (atom false)]
@@ -68,4 +68,49 @@
                        :query-params {"type" ""}}
               response (indicators/handler request)]
           (is (= 200 (:status response)))
+          (is @find-all-called?)))))
+
+  (testing "calls find-all-documents when type is whitespace only"
+    (let [find-all-called? (atom false)]
+      (with-redefs [d/db (constantly :mock-db)
+                    store/find-all-documents (fn [_]
+                                               (reset! find-all-called? true)
+                                               mock-documents)
+                    store/transform-keys (constantly transformed-documents)]
+        (let [request {:conn :mock-conn
+                       :query-params {"type" "   "}}
+              response (indicators/handler request)]
+          (is (= 200 (:status response)))
           (is @find-all-called?))))))
+
+(deftest get-indicators-by-type-test
+  (testing "calls find-document-by-type when type param is provided"
+    (let [captured-type (atom nil)]
+      (with-redefs [d/db (constantly :mock-db)
+                    store/find-document-by-type (fn [_ t]
+                                                  (reset! captured-type t)
+                                                  [(first mock-documents)])
+                    store/transform-keys (constantly [(first transformed-documents)])]
+        (let [request {:conn :mock-conn
+                       :query-params {"type" "IPv4"}}
+              response (indicators/handler request)]
+          (is (= 200 (:status response)))
+          (is (= "IPv4" @captured-type))))))
+
+  (testing "returns HTTP 200 when filtering by type"
+    (with-redefs [d/db (constantly :mock-db)
+                  store/find-document-by-type (constantly [(first mock-documents)])
+                  store/transform-keys (constantly [(first transformed-documents)])]
+      (let [request {:conn :mock-conn
+                     :query-params {"type" "hostname"}}
+            response (indicators/handler request)]
+        (is (= 200 (:status response))))))
+
+  (testing "returns empty results when no documents match the type"
+    (with-redefs [d/db (constantly :mock-db)
+                  store/find-document-by-type (constantly [])
+                  store/transform-keys (constantly [])]
+      (let [request {:conn :mock-conn
+                     :query-params {"type" "URL"}}
+            response (indicators/handler request)]
+        (is (= {:results []} (:body response)))))))

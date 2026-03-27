@@ -64,15 +64,23 @@
         (is (= "IPv4" (-> indicators first :type)))))))
 
 (deftest get-nonexistent-document-test
-  (testing "returns nil result when document not found"
+  (testing "returns 404 when document not found"
     (with-redefs [d/db (constantly :mock-db)
                   store/find-document (constantly nil)
                   store/transform-keys (constantly nil)]
       (let [request {:conn :mock-conn
                      :reitit.core/match {:path-params {:id "nonexistent-id"}}}
             response (indicator/handler request)]
-        (is (= 200 (:status response)))
-        (is (= {:result nil} (:body response)))))))
+        (is (= 404 (:status response))))))
+
+  (testing "returns error message when document not found"
+    (with-redefs [d/db (constantly :mock-db)
+                  store/find-document (constantly nil)
+                  store/transform-keys (constantly nil)]
+      (let [request {:conn :mock-conn
+                     :reitit.core/match {:path-params {:id "nonexistent-id"}}}
+            response (indicator/handler request)]
+        (is (contains? (:body response) :error))))))
 
 (deftest id-extraction-test
   (testing "extracts ID from reitit match"

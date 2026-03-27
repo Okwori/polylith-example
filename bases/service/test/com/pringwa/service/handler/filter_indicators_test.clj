@@ -49,6 +49,21 @@
             response (filter-indicators/handler request)]
         (is (= 400 (:status response)))))))
 
+(deftest unknown-criteria-test
+  (testing "returns 400 for unknown criteria key"
+    (with-redefs [d/db (constantly :mock-db)]
+      (let [request {:conn :mock-conn
+                     :body-params {:adversarry "typo"}}
+            response (filter-indicators/handler request)]
+        (is (= 400 (:status response))))))
+
+  (testing "returns :error for unknown criteria key"
+    (with-redefs [d/db (constantly :mock-db)]
+      (let [request {:conn :mock-conn
+                     :body-params {:unknown-field "value"}}
+            response (filter-indicators/handler request)]
+        (is (contains? (:body response) :error))))))
+
 ;; Search tests
 (deftest search-by-adversary-test
   (testing "returns matching documents"
