@@ -1,23 +1,29 @@
 # Centripetal Network Assignment
-Your objective is to build a simple JSON based REST Microservice. The service will provide search capabilities 
-on an open source intelligence feed provided by AlienVault OTX. REST and microservices are fairly common, 
+Your objective is to build a simple JSON based REST Microservice. The service will provide search capabilities
+on an open source intelligence feed provided by AlienVault OTX. REST and microservices are fairly common,
 the goal here is to show how this might be done in a Clojure application using its functional capabilities.
 
 ## Prerequisites
 ### Tools
-* [Java 17+](https://adoptium.net/en-GB/temurin/releases?version=25&os=any&arch=any)
-* [Clojure](https://clojure.org/reference/clojure_cli) 
-* [Docker](https://www.docker.com/get-started/)
+* [Java 21+](https://adoptium.net/en-GB/temurin/releases?version=21&os=any&arch=any)
+* [Clojure](https://clojure.org/reference/clojure_cli)
+* [Docker](https://www.docker.com/get-started/) (optional)
 ### Helpful Libs
 * [Datomic DB Local](https://docs.datomic.com/datomic-local.html)
 * [Polylith Architecture](https://github.com/polyfy/polylith)
 * [Component](https://github.com/stuartsierra/component)
 
+## First-time setup
+
+```shell
+# Install git hooks (runs lint + tests before every commit)
+make install-hooks
+```
+
 ## Running
 
 ### Run Locally
 ```shell
-# Run the application
 make run
 ```
 
@@ -29,11 +35,10 @@ make run-jar
 
 ### Via Docker
 ```shell
-# Build and run
 make docker-build
 make docker-run
 
-# Or stop the container
+# Stop the container
 make docker-stop
 ```
 
@@ -42,35 +47,26 @@ make docker-stop
 [http://localhost:8080/api-docs](http://localhost:8080/api-docs)
 
 ### Endpoints
-* GET _/indicators/:id_ :
-Note: This currently uses `document/id`, which is the top-level string ID.
-Alternatively, `indicator/id` (a long value within the inner vector) could be what is expected?
+All business endpoints are versioned under `/v1`. Infrastructure endpoints are unversioned.
+
+* `GET /healthcheck` — liveness probe (204)
+* `GET /metrics` — JVM heap, threads, uptime
+* `GET /v1/indicators` — all indicators
+* `GET /v1/indicators?type=IPv4` — filter by indicator type
+* `GET /v1/indicators/:id` — single indicator by document ID (returns 404 if not found)
+* `POST /v1/indicators/search` — search by criteria
+* `GET /api-docs` — Swagger UI
+
 ```shell
-# curl http://localhost:8080/indicators/5b433d8fe822e72e3c57d26c
-make api-indicator ID=5b3cb789bd391e24a8b1dc53
-```
-* GET _/indicators_ :
-```shell
-# curl http://localhost:8080/indicators
+make api-health
+make api-metrics
 make api-indicators
-```
-* GET _/indicators?type=IPv4_ :
-```shell
-# curl "http://localhost:8080/indicators?type=IPv4"
 make api-indicators-type TYPE=IPv4
-```
-* POST _/indicators/search_ :
-```shell
-# curl -X POST http://localhost:8080/indicators/search \
-#  -H "Content-Type: application/json" \
-#  -d '{"adversary": "Plead"}'
+make api-indicator ID=5b3cb789bd391e24a8b1dc53
 make api-search QUERY='{"adversary":"Plead"}'
-# curl -X POST http://localhost:8080/indicators/search \
-#  -H "Content-Type: application/json" \
-#  -d '{"author_name": "AlienVault"}'
-make api-search QUERY='{"author_name":"AlienVault"}'
 ```
-Search Criteria Options
+
+### Search Criteria
 
 | Field                | Type            | Example                                             |
 |----------------------|-----------------|-----------------------------------------------------|
@@ -80,48 +76,49 @@ Search Criteria Options
 | `tags`               | string or array | `{"tags": "china"}` or `{"tags": ["china", "apt"]}` |
 | `industries`         | string or array | `{"industries": "tech"}`                            |
 | `targeted_countries` | string or array | `{"targeted_countries": "Kuwait"}`                  |
-| `revision`           | number          | `{"revision": 1}`                                   |
-| `public`             | number (0 or 1) | `{"public": 1}`                                     |
+| `name`               | string          | `{"name": "Plead Downloader"}`                      |
+| `id`                 | string          | `{"id": "5b433d8fe822e72e3c57d26c"}`                |
+| `description`        | string          | `{"description": "APT"}`                            |
 
-* Check Health
-```shell
-make api-health
-```
-
-### Explore Project
-```shell
-make info
-```
-
-### Check Code Formatting
-```shell
-make format-check
-```
-### Available Commands
-
-| Command             | Description                |
-|---------------------|----------------------------|
-| `make run`          | Run application locally    |
-| `make run-jar`      | Build and run the JAR file |
-| `make build`        | Build uberjar              |
-| `make clean`        | Clean build artifacts      |
-| `make test`         | Run unit tests             |
-| `make format-check` | Check code formatting      |
-| `make docker-build` | Build Docker image         |
-| `make docker-run`   | Run Docker container       |
-| `make docker-stop`  | Stop Docker container      |
-| `make docker-clean` | Remove Docker image        |
-| `make info`         | Show project information   |
-
+Unknown criteria keys return `400 Bad Request`.
 
 ## Testing
-WIP on unit and integration testing with [Speclj](https://github.com/slagyr/speclj) 
-and [Etaoin](https://github.com/clj-commons/etaoin).
 
-However, you can run the existing Clojure unit tests::
 ```shell
-make test
+make test        # clojure.test unit tests (via poly test runner)
+make spec-test   # Speclj BDD specs
 ```
+
+## Code Quality
+
+```shell
+make format-check              # check formatting
+clojure -M:cljfmt fix          # auto-fix formatting
+clj-kondo --lint bases components   # lint
+```
+
+### Available Commands
+
+| Command               | Description                       |
+|-----------------------|-----------------------------------|
+| `make run`            | Run application locally           |
+| `make run-jar`        | Build and run the JAR file        |
+| `make build`          | Build uberjar                     |
+| `make clean`          | Clean build artifacts             |
+| `make test`           | Run clojure.test unit tests       |
+| `make spec-test`      | Run Speclj specs                  |
+| `make install-hooks`  | Install git pre-commit hooks      |
+| `make format-check`   | Check code formatting             |
+| `make export-openapi` | Export OpenAPI spec to openapi.json |
+| `make docker-build`   | Build Docker image                |
+| `make docker-run`     | Run Docker container              |
+| `make docker-stop`    | Stop Docker container             |
+| `make docker-clean`   | Remove Docker image               |
+| `make info`           | Show project information          |
+
+## Deployment
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full deployment pipeline (Datomic Ion, staging/prod environments).
 
 ## Reference
 * [clj-poly-doc](https://cljdoc.org/d/polylith/clj-poly/0.3.32/doc/readme)

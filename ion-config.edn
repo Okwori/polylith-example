@@ -1,0 +1,4 @@
+{:allow   [com.pringwa.service.ion/handler]
+ :lambdas {}
+ :app-name "pringwa-service"
+ :region  #or [#env AWS_REGION "us-east-1"]}

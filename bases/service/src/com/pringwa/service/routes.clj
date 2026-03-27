@@ -18,16 +18,17 @@
      [["/swagger.json"
        {:get {:no-doc  true
               :swagger {:info {:title       "Centripetal Network"
-                               :description "Indicators API"}}
+                               :description "Indicators API v1"}}
               :handler (swagger/create-swagger-handler)}}]
       ["/healthcheck" {:get healthcheck/handler, :name ::healthcheck}]
       ["/metrics"     {:get metrics/handler,     :name ::metrics}]
-      ["/indicators"
-       ["" {:get {:handler    indicators/handler :name ::indicators
-                  :parameters {:query {:type string?}}}}]
-       ["/search" {:post {:handler filter-indicators/handler :name ::filter-indicator}}]
-       ["/:id" {:get {:handler    indicator/handler, :name ::indicator
-                      :parameters {:path {:id string?}}}}]]]
+      ["/v1"
+       ["/indicators"
+        ["" {:get {:handler    indicators/handler :name ::indicators
+                   :parameters {:query {:type string?}}}}]
+        ["/search" {:post {:handler filter-indicators/handler :name ::filter-indicator}}]
+        ["/:id" {:get {:handler    indicator/handler, :name ::indicator
+                       :parameters {:path {:id string?}}}}]]]]
 
      {:conflicts nil
       :data      {:muuntaja     m/instance

@@ -2,8 +2,9 @@
 # Service API - Makefile
 # ==============================================================================
 
-.PHONY: help install clean build run test docker-build docker-run docker-stop \
-        repl lint format tree deps package
+.PHONY: help install clean build run test spec-test install-hooks docker-build \
+        docker-run docker-stop format-check api-health api-indicators \
+        api-indicators-type api-indicator api-search info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -47,9 +48,22 @@ build: clean ## Build uberjar
 # TESTING
 # ==============================================================================
 
-test: ## Run unit tests
-	@echo "🧪 Running tests..."
+test: ## Run clojure.test unit tests
+	@echo "🧪 Running unit tests..."
 	clojure -M:poly test
+
+spec-test: ## Run Speclj specs
+	@echo "🧪 Running specs..."
+	clojure -M:dev:test
+
+# ==============================================================================
+# GIT HOOKS
+# ==============================================================================
+
+install-hooks: ## Install git hooks (run once after cloning)
+	@echo "🔧 Installing git hooks..."
+	git config core.hooksPath .githooks
+	@echo "✅ Hooks installed — pre-commit will run format-check + tests"
 
 # ==============================================================================
 # DOCKER
@@ -94,21 +108,25 @@ api-health: ## Test healthcheck endpoint
 	curl -s -o /dev/null -w "%{http_code}" http://localhost:$(PORT)/healthcheck
 	@echo ""
 
+api-metrics: ## Get JVM metrics
+	@echo "📊 Getting metrics..."
+	curl -s http://localhost:$(PORT)/metrics | jq .
+
 api-indicators: ## Get all indicators
 	@echo "📋 Getting all indicators..."
-	curl -s http://localhost:$(PORT)/indicators | jq .
+	curl -s http://localhost:$(PORT)/v1/indicators | jq .
 
 api-indicators-type: ## Get indicators by type (usage: make api-indicators-type TYPE=IPv4)
 	@echo "📋 Getting indicators by type: $(TYPE)..."
-	curl -s "http://localhost:$(PORT)/indicators?type=$(TYPE)" | jq .
+	curl -s "http://localhost:$(PORT)/v1/indicators?type=$(TYPE)" | jq .
 
 api-indicator: ## Get indicator by ID (usage: make api-indicator ID=xxx)
 	@echo "📋 Getting indicator: $(ID)..."
-	curl -s http://localhost:$(PORT)/indicators/$(ID) | jq .
+	curl -s http://localhost:$(PORT)/v1/indicators/$(ID) | jq .
 
 api-search: ## Search indicators (usage: make api-search QUERY='{"adversary":"Plead"}')
 	@echo "🔍 Searching indicators..."
-	curl -s -X POST http://localhost:$(PORT)/indicators/search \
+	curl -s -X POST http://localhost:$(PORT)/v1/indicators/search \
 		-H "Content-Type: application/json" \
 		-d '$(QUERY)' | jq .
 
@@ -128,10 +146,15 @@ info:
 	@echo "  Port:        $(PORT)"
 	@echo ""
 	@echo "  Endpoints:"
-	@echo "    - GET  /healthcheck	=>	make api-health"
-	@echo "    - GET  /indicators	=>	make api-indicators"
-	@echo "    - GET  /indicators?type={type} =>	make api-indicators-type TYPE=IPv4"
-	@echo "    - GET  /indicators/:id =>	make api-indicator ID=5b3cb789bd391e24a8b1dc53"
-	@echo "    - POST /indicators/search =>	make api-search QUERY='{"adversary":"Plead"}'"
-	@echo "    - GET  /api-docs (Swagger UI)	=>	visit http:localhost:8080/api-docs"
+	@echo "    - GET  /healthcheck                  =>  make api-health"
+	@echo "    - GET  /metrics                      =>  make api-metrics"
+	@echo "    - GET  /v1/indicators                =>  make api-indicators"
+	@echo "    - GET  /v1/indicators?type={type}    =>  make api-indicators-type TYPE=IPv4"
+	@echo "    - GET  /v1/indicators/:id            =>  make api-indicator ID=5b3cb789bd391e24a8b1dc53"
+	@echo "    - POST /v1/indicators/search         =>  make api-search QUERY='{\"adversary\":\"Plead\"}'"
+	@echo "    - GET  /api-docs (Swagger UI)        =>  http://localhost:8080/api-docs"
 	@echo ""
+
+help: ## Show this help
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+		awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-20s\033[0m %s\n", $$1, $$2}'

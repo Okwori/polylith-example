@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -e
+
+echo "--- format check ---"
+clojure -M:cljfmt check
+
+echo "--- unit tests ---"
+clojure -M:poly test
+
+echo "--- specs ---"
+clojure -M:dev:test
+
+echo "✅ All checks passed"

@@ -1,0 +1,67 @@
+name: Deploy — Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: "Git SHA to deploy (defaults to latest main)"
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    name: Push & deploy to production
+    runs-on: ubuntu-latest
+    environment: production   # requires manual approval in GitHub env settings
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      APP_PROFILE: prod
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.sha || github.ref }}
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Clojure
+        uses: DeLaGuardo/setup-clojure@12
+        with:
+          cli: latest
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+            ~/.deps.clj
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/deps.edn') }}
+          restore-keys: ${{ runner.os }}-deps-
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Push to Datomic Cloud
+        run: clojure -A:dev:ion push --uname ${{ inputs.sha || github.sha }}
+
+      - name: Deploy to production
+        run: |
+          clojure -A:dev:ion deploy \
+            --system ${{ vars.PROD_SYSTEM }} \
+            --uname  ${{ inputs.sha || github.sha }}
+
+      - name: Wait for deploy
+        run: |
+          clojure -A:dev:ion deploy-status \
+            --system ${{ vars.PROD_SYSTEM }} \
+            --uname  ${{ inputs.sha || github.sha }}

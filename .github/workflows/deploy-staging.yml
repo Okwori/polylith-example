@@ -1,0 +1,61 @@
+name: Deploy — Staging
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    name: Push & deploy to staging
+    runs-on: ubuntu-latest
+    environment: staging
+
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      APP_PROFILE: staging
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Set up Clojure
+        uses: DeLaGuardo/setup-clojure@12
+        with:
+          cli: latest
+
+      - name: Cache deps
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+            ~/.deps.clj
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/deps.edn') }}
+          restore-keys: ${{ runner.os }}-deps-
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.AWS_REGION }}
+
+      - name: Push to Datomic Cloud
+        run: clojure -A:dev:ion push --uname ${{ github.sha }}
+
+      - name: Deploy to staging
+        run: |
+          clojure -A:dev:ion deploy \
+            --system ${{ vars.STAGING_SYSTEM }} \
+            --uname  ${{ github.sha }}
+
+      - name: Wait for deploy
+        run: |
+          clojure -A:dev:ion deploy-status \
+            --system ${{ vars.STAGING_SYSTEM }} \
+            --uname  ${{ github.sha }}
