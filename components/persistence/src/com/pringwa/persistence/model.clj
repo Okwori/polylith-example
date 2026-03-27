@@ -33,10 +33,10 @@
   (cache/lookup-or-miss
     [(cache/basis-t db) :find-doc id]
     (fn []
-      (let [q '{:find [(pull ?document pattern)]
-                :in [$ ?document-id pattern]
-                :where [[?document :document/id ?document-id]]}]
-        (ffirst (d/q {:query q :args [db id document-pattern]}))))))
+      (let [q {:find  [(list 'pull '?document document-pattern)]
+               :in    '[$ ?document-id]
+               :where '[[?document :document/id ?document-id]]}]
+        (ffirst (d/q {:query q :args [db id]}))))))
 
 (defn find-all-documents [db]
   (cache/lookup-or-miss
@@ -51,11 +51,11 @@
   (cache/lookup-or-miss
     [(cache/basis-t db) :find-by-type type]
     (fn []
-      (let [q '{:find [(pull ?document pattern)]
-                :in [$ ?type-str pattern]
-                :where [[?document :document/indicators ?indicators]
+      (let [q {:find  [(list 'pull '?document document-pattern)]
+               :in    '[$ ?type-str]
+               :where '[[?document :document/indicators ?indicators]
                         [?indicators :indicator/type ?type-str]]}]
-        (mapv first (d/q {:query q :args [db type document-pattern]}))))))
+        (mapv first (d/q {:query q :args [db type]}))))))
 
 (defn search-documents
   "Executes a compiled Datomic query derived from a criteria map.

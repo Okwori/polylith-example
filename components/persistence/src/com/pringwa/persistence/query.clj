@@ -2,9 +2,8 @@
   "DSL that compiles a search-criteria map into a Datomic Datalog query.
 
   Each key in the criteria map is a document attribute keyword (without the
-  :document/ namespace).  Values are matched according to three dispatch rules:
+  :document/ namespace).  Values are matched according to two dispatch rules:
 
-    - fulltext-attrs  → (fulltext $ :document/K \"v\") [[?doc]]   tokenised, stemmed, case-insensitive
     - many-attrs      → [?doc :document/K v] or (or ...)          set membership
     - everything else → [?doc :document/K v]                      exact equality
 
@@ -13,23 +12,23 @@
   An anchor clause [?doc :document/id] is always prepended so the query is
   scoped to document entities and benefits from the :document/id index.
 
+  Attributes declared :db/fulltext true in the schema (name, description,
+  adversary, author_name) benefit from Datomic's fulltext index when running
+  against Datomic Cloud or On-Prem; on Datomic Local :mem they fall back to
+  exact attribute equality.
+
   Example:
-    (compile {:adversary \"Plead\" :tags [\"china\" \"apt\"]})
+    (build-query {:adversary \"Plead\" :tags [\"china\" \"apt\"]})
     ;;=> {:query {:find  [(pull ?doc pattern)]
     ;;            :in    [$ pattern]
     ;;            :where [[?doc :document/id]
-    ;;                    [(fulltext $ :document/adversary \"Plead\") [[?doc]]]
+    ;;                    [?doc :document/adversary \"Plead\"]
     ;;                    (or [?doc :document/tags \"china\"]
     ;;                        [?doc :document/tags \"apt\"])]}}")
 
 ;; ---------------------------------------------------------------------------
 ;; Schema knowledge
 ;; ---------------------------------------------------------------------------
-
-(def ^:private fulltext-attrs
-  "Attributes declared with :db/fulltext true in the schema.
-  Searched using Datomic's fulltext function: tokenised, stemmed, case-insensitive."
-  #{:name :description :adversary :author_name})
 
 (def ^:private many-attrs
   "Attributes with db.cardinality/many — matched by set-membership logic."
@@ -47,12 +46,6 @@
 (defn- scalar-clause [k v]
   [['?doc (doc-attr k) v]])
 
-(defn- fulltext-clause
-  "Produces a Datomic fulltext function expression clause.
-  Binds the matched entity to ?doc, unifying with the rest of the query."
-  [k v]
-  [[(list 'fulltext '$ (doc-attr k) v) [['?doc]]]])
-
 (defn- membership-clauses
   "Produces a single equality clause for one value, or an `or` clause for many."
   [k values]
@@ -63,10 +56,9 @@
       [(apply list 'or (map (fn [v] ['?doc attr v]) values))])))
 
 (defn- entry->clauses [[k v]]
-  (cond
-    (contains? fulltext-attrs k) (fulltext-clause k v)
-    (contains? many-attrs k)     (membership-clauses k v)
-    :else                        (scalar-clause k v)))
+  (if (contains? many-attrs k)
+    (membership-clauses k v)
+    (scalar-clause k v)))
 
 ;; ---------------------------------------------------------------------------
 ;; Public API

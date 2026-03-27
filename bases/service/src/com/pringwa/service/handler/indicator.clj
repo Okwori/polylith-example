@@ -7,8 +7,8 @@
       store/transform-keys))
 
 (defn handler
-  [{:keys [conn reitit.core/match]}]
-  (let [id  (-> match :path-params :id)
+  [{:keys [conn path-params]}]
+  (let [id  (:id path-params)
         doc (result conn id)]
     (if doc
       {:status 200 :body {:result doc}}
