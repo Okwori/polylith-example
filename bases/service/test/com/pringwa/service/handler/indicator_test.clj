@@ -33,8 +33,7 @@
     (with-redefs [d/db (constantly :mock-db)
                   store/find-document (constantly mock-document)
                   store/transform-keys (constantly transformed-document)]
-      (let [request {:conn :mock-conn
-                     :reitit.core/match {:path-params {:id "5b433d8fe822e72e3c57d26c"}}}
+      (let [request  {:conn :mock-conn :path-params {:id "5b433d8fe822e72e3c57d26c"}}
             response (indicator/handler request)]
         (is (= 200 (:status response))))))
 
@@ -42,10 +41,9 @@
     (with-redefs [d/db (constantly :mock-db)
                   store/find-document (constantly mock-document)
                   store/transform-keys (constantly transformed-document)]
-      (let [request {:conn :mock-conn
-                     :reitit.core/match {:path-params {:id "5b433d8fe822e72e3c57d26c"}}}
+      (let [request  {:conn :mock-conn :path-params {:id "5b433d8fe822e72e3c57d26c"}}
             response (indicator/handler request)
-            result (-> response :body :result)]
+            result   (-> response :body :result)]
         (is (= "5b433d8fe822e72e3c57d26c" (:id result)))
         (is (= "Test Document" (:name result)))
         (is (= "Plead" (:adversary result)))
@@ -55,9 +53,8 @@
     (with-redefs [d/db (constantly :mock-db)
                   store/find-document (constantly mock-document)
                   store/transform-keys (constantly transformed-document)]
-      (let [request {:conn :mock-conn
-                     :reitit.core/match {:path-params {:id "5b433d8fe822e72e3c57d26c"}}}
-            response (indicator/handler request)
+      (let [request    {:conn :mock-conn :path-params {:id "5b433d8fe822e72e3c57d26c"}}
+            response   (indicator/handler request)
             indicators (-> response :body :result :indicators)]
         (is (= 1 (count indicators)))
         (is (= "192.168.1.1" (-> indicators first :indicator)))
@@ -68,8 +65,7 @@
     (with-redefs [d/db (constantly :mock-db)
                   store/find-document (constantly nil)
                   store/transform-keys (constantly nil)]
-      (let [request {:conn :mock-conn
-                     :reitit.core/match {:path-params {:id "nonexistent-id"}}}
+      (let [request  {:conn :mock-conn :path-params {:id "nonexistent-id"}}
             response (indicator/handler request)]
         (is (= 404 (:status response))))))
 
@@ -77,23 +73,20 @@
     (with-redefs [d/db (constantly :mock-db)
                   store/find-document (constantly nil)
                   store/transform-keys (constantly nil)]
-      (let [request {:conn :mock-conn
-                     :reitit.core/match {:path-params {:id "nonexistent-id"}}}
+      (let [request  {:conn :mock-conn :path-params {:id "nonexistent-id"}}
             response (indicator/handler request)]
         (is (contains? (:body response) :error))))))
 
 (deftest id-extraction-test
-  (testing "extracts ID from reitit match"
+  (testing "extracts ID from path-params"
     (let [passed-id (atom nil)]
       (with-redefs [d/db (constantly :mock-db)
                     store/find-document (fn [_ id]
                                           (reset! passed-id id)
                                           mock-document)
                     store/transform-keys (constantly transformed-document)]
-        (let [request {:conn :mock-conn
-                       :reitit.core/match {:path-params {:id "abc123"}}}
-              _ (indicator/handler request)]
-          (is (= "abc123" @passed-id))))))
+        (indicator/handler {:conn :mock-conn :path-params {:id "abc123"}})
+        (is (= "abc123" @passed-id)))))
 
   (testing "handles IDs with hex characters"
     (let [passed-id (atom nil)]
@@ -102,7 +95,5 @@
                                           (reset! passed-id id)
                                           mock-document)
                     store/transform-keys (constantly transformed-document)]
-        (let [request {:conn :mock-conn
-                       :reitit.core/match {:path-params {:id "5b433d8fe822e72e3c57d26c"}}}
-              _ (indicator/handler request)]
-          (is (= "5b433d8fe822e72e3c57d26c" @passed-id)))))))
+        (indicator/handler {:conn :mock-conn :path-params {:id "5b433d8fe822e72e3c57d26c"}})
+        (is (= "5b433d8fe822e72e3c57d26c" @passed-id))))))
