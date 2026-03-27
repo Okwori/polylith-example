@@ -2,9 +2,6 @@
   (:require [speclj.core :refer :all]
             [com.pringwa.persistence.cache :as cache]))
 
-(defn- mock-db [t]
-  {:t t})
-
 (describe "cache"
   (before (cache/clear!))
 
