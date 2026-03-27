@@ -4,6 +4,7 @@
   (:require [aero.core :as aero]
             [clojure.java.io :as io]
             [clojure.tools.logging :as log]
+            [com.pringwa.server.interface :as server]
             [com.pringwa.service.routes :as routes]
             [datomic.client.api :as d]
             [datomic.ion :as ion]))
@@ -24,8 +25,13 @@
       (log/infof "Ion connecting to system=%s db=%s" system db-name)
       (d/connect client {:db-name db-name}))))
 
+(def ^:private app
+  (server/wrap-exception
+    (fn [request]
+      ((routes/router) (assoc request :conn @!conn)))))
+
 (defn handler
   "Ion web handler — registered as the entry point in ion-config.edn.
    Receives a Ring request from API Gateway, returns a Ring response."
   [request]
-  ((routes/router) (assoc request :conn @!conn)))
+  (app request))
