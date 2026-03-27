@@ -68,7 +68,7 @@
 (deftest search-by-adversary-test
   (testing "returns matching documents"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly mock-documents)
                   store/transform-keys (constantly [(first transformed-documents)])]
       (let [request {:conn :mock-conn
                      :body-params {:adversary "Plead"}}
@@ -78,7 +78,7 @@
 
   (testing "returns empty results when no match"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly [])
                   store/transform-keys (constantly [])]
       (let [request {:conn :mock-conn
                      :body-params {:adversary "NonExistent"}}
@@ -89,7 +89,7 @@
 (deftest search-by-tlp-test
   (testing "returns documents with matching tlp"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly mock-documents)
                   store/transform-keys (constantly [(first transformed-documents)])]
       (let [request {:conn :mock-conn
                      :body-params {:tlp "white"}}
@@ -100,7 +100,7 @@
 (deftest search-by-author-test
   (testing "returns documents with matching author"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly mock-documents)
                   store/transform-keys (constantly [(first transformed-documents)])]
       (let [request {:conn :mock-conn
                      :body-params {:author_name "AlienVault"}}
@@ -110,7 +110,7 @@
 (deftest search-by-tags-test
   (testing "returns documents containing tag"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly mock-documents)
                   store/transform-keys (constantly transformed-documents)]
       (let [request {:conn :mock-conn
                      :body-params {:tags "apt"}}
@@ -120,7 +120,7 @@
 (deftest search-by-multiple-criteria-test
   (testing "returns documents matching all criteria"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly mock-documents)
                   store/transform-keys (constantly [(first transformed-documents)])]
       (let [request {:conn :mock-conn
                      :body-params {:adversary "Plead"
@@ -130,7 +130,7 @@
 
   (testing "returns empty when criteria don't all match"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly [])
                   store/transform-keys (constantly [])]
       (let [request {:conn :mock-conn
                      :body-params {:adversary "Plead"
@@ -142,7 +142,7 @@
 (deftest response-structure-test
   (testing "returns body with :results key"
     (with-redefs [d/db (constantly :mock-db)
-                  store/find-all-documents (constantly mock-documents)
+                  store/search-documents (constantly mock-documents)
                   store/transform-keys (constantly transformed-documents)]
       (let [request {:conn :mock-conn
                      :body-params {:adversary "Plead"}}
