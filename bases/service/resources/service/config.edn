@@ -18,4 +18,12 @@
                       :db-name #or [#env DATOMIC_DB_NAME "indicators-prod"]}}
 
  :server {:host #or [#env HOST "localhost"]
-          :port #long #or [#env PORT 8080]}}
+          :port #long #or [#env PORT 8080]}
+
+ ;; Authentication options passed to wrap-authentication.
+ ;; :dev? true  — skip JWT validation, inject a dev identity (local only)
+ ;; :validator-fn — supply at runtime (Cognito/Auth0 JWKS validator, etc.)
+ ;;                 For Ion deployments leave nil; API Gateway validates tokens.
+ :auth #profile {:dev     {:dev? true}
+                 :staging {}
+                 :prod    {}}}

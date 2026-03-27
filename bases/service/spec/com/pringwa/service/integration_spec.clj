@@ -76,7 +76,10 @@
       conn)))
 
 (defn- req [conn & {:as opts}]
-  (merge {:conn conn} opts))
+  (merge {:conn          conn
+          :db            (d/db conn)
+          :access-policy nil}       ; nil = unrestricted (admin) for integration tests
+         opts))
 
 ;; ---------------------------------------------------------------------------
 ;; Shared state

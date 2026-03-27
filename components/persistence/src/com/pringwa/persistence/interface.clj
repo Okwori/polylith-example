@@ -3,26 +3,32 @@
             [com.pringwa.persistence.model :as model]
             [com.pringwa.persistence.util :as util]))
 
+(def document-pattern
+  "Full pull pattern for a document entity.  Callers may derive restricted
+  variants from this for attribute-level access policies."
+  model/document-pattern)
+
 (defn matches? [document criteria]
   (util/matches? document criteria))
 
 (defn transform-keys [m]
   (util/transform-keys m))
 
-(defn find-document [db id]
-  (model/find-document db id))
+(defn find-document
+  ([db id]              (model/find-document db id))
+  ([db id access-policy] (model/find-document db id access-policy)))
 
-(defn find-all-documents [db]
-  (model/find-all-documents db))
+(defn find-all-documents
+  ([db]              (model/find-all-documents db))
+  ([db access-policy] (model/find-all-documents db access-policy)))
 
-(defn find-document-by-type [db type]
-  (model/find-document-by-type db type))
+(defn find-document-by-type
+  ([db type]              (model/find-document-by-type db type))
+  ([db type access-policy] (model/find-document-by-type db type access-policy)))
 
 (defn search-documents
-  "Searches documents by criteria map, pushing filtering into Datomic."
-  [db criteria]
-  (model/search-documents db criteria))
+  ([db criteria]              (model/search-documents db criteria))
+  ([db criteria access-policy] (model/search-documents db criteria access-policy)))
 
-(defn create
-  [config]
+(defn create [config]
   (db/new-database config))

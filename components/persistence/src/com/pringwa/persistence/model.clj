@@ -4,6 +4,8 @@
             [datomic.client.api :as d]))
 
 (def document-pattern
+  "Full pull pattern for a document entity.  Exposed so callers can derive
+  restricted variants for attribute-level access policies."
   [:document/id
    :document/name
    :document/tlp
@@ -29,40 +31,91 @@
      :indicator/description
      :indicator/content]}])
 
-(defn find-document [db id]
-  (cache/lookup-or-miss
-    [(cache/basis-t db) :find-doc id]
-    (fn []
-      (let [q {:find  [(list 'pull '?document document-pattern)]
-               :in    '[$ ?document-id]
-               :where '[[?document :document/id ?document-id]]}]
-        (ffirst (d/q {:query q :args [db id]}))))))
+;; ---------------------------------------------------------------------------
+;; Access-policy helpers
+;; ---------------------------------------------------------------------------
 
-(defn find-all-documents [db]
-  (cache/lookup-or-miss
-    [(cache/basis-t db) :find-all]
-    (fn []
-      (let [q '{:find [(pull ?document pattern)]
-                :in [$ pattern]
-                :where [[?document :document/id]]}]
-        (mapv first (d/q {:query q :args [db document-pattern]}))))))
+(defn- effective-pattern [access-policy]
+  (or (:pull-pattern access-policy) document-pattern))
 
-(defn find-document-by-type [db type]
-  (cache/lookup-or-miss
-    [(cache/basis-t db) :find-by-type type]
-    (fn []
-      (let [q {:find  [(list 'pull '?document document-pattern)]
-               :in    '[$ ?type-str]
-               :where '[[?document :document/indicators ?indicators]
-                        [?indicators :indicator/type ?type-str]]}]
-        (mapv first (d/q {:query q :args [db type]}))))))
+(defn- apply-visibility
+  "Injects entity-level visibility rules into a query map when the access-policy
+  carries rules.  Rules must implement the (visible? ?doc) predicate.
+  The rules vector is added to :in as % and (visible? ?doc) to :where."
+  [q access-policy]
+  (if-let [rules (:entity-rules access-policy)]
+    (-> q
+        (update :in conj '%)
+        (update :where conj '(visible? ?doc)))
+    q))
+
+(defn- visibility-args [db access-policy pattern]
+  (cond-> [db]
+    (:entity-rules access-policy) (conj (:entity-rules access-policy))
+    true                          (conj pattern)))
+
+;; ---------------------------------------------------------------------------
+;; Query functions
+;; ---------------------------------------------------------------------------
+
+(defn find-document
+  ([db id]            (find-document db id nil))
+  ([db id access-policy]
+   (cache/lookup-or-miss
+     [(cache/basis-t db) :find-doc id access-policy]
+     (fn []
+       (let [pattern (effective-pattern access-policy)
+             q       (apply-visibility
+                       {:find  [(list 'pull '?doc pattern)]
+                        :in    '[$ ?doc-id]
+                        :where '[[?doc :document/id ?doc-id]]}
+                       access-policy)]
+         (ffirst (d/q {:query q
+                       :args  (into (visibility-args db access-policy pattern)
+                                    [id])})))))))
+
+(defn find-all-documents
+  ([db]              (find-all-documents db nil))
+  ([db access-policy]
+   (cache/lookup-or-miss
+     [(cache/basis-t db) :find-all access-policy]
+     (fn []
+       (let [pattern (effective-pattern access-policy)
+             q       (apply-visibility
+                       {:find  [(list 'pull '?doc pattern)]
+                        :in    '[$ pattern]
+                        :where '[[?doc :document/id]]}
+                       access-policy)]
+         (mapv first (d/q {:query q
+                           :args  (visibility-args db access-policy pattern)})))))))
+
+(defn find-document-by-type
+  ([db type]              (find-document-by-type db type nil))
+  ([db type access-policy]
+   (cache/lookup-or-miss
+     [(cache/basis-t db) :find-by-type type access-policy]
+     (fn []
+       (let [pattern (effective-pattern access-policy)
+             q       (apply-visibility
+                       {:find  [(list 'pull '?doc pattern)]
+                        :in    '[$ ?type-str pattern]
+                        :where '[[?doc :document/indicators ?ind]
+                                 [?ind :indicator/type ?type-str]]}
+                       access-policy)]
+         (mapv first (d/q {:query q
+                           :args  (into (visibility-args db access-policy pattern)
+                                        [type])})))))))
 
 (defn search-documents
   "Executes a compiled Datomic query derived from a criteria map.
   Pushes all filtering into the database — no in-memory scan."
-  [db criteria]
-  (cache/lookup-or-miss
-    [(cache/basis-t db) :search criteria]
-    (fn []
-      (let [{:keys [query]} (query/build-query criteria)]
-        (mapv first (d/q {:query query :args [db document-pattern]}))))))
+  ([db criteria]              (search-documents db criteria nil))
+  ([db criteria access-policy]
+   (cache/lookup-or-miss
+     [(cache/basis-t db) :search criteria access-policy]
+     (fn []
+       (let [pattern (effective-pattern access-policy)
+             {:keys [query]} (query/build-query criteria)
+             q       (apply-visibility query access-policy)]
+         (mapv first (d/q {:query q
+                           :args  (visibility-args db access-policy pattern)})))))))

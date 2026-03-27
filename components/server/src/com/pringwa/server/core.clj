@@ -1,5 +1,6 @@
 (ns com.pringwa.server.core
   (:require [clojure.tools.logging :as log]
+            [com.pringwa.server.auth :refer [wrap-authentication]]
             [com.pringwa.server.middleware :refer [wrap-connection wrap-exception]]
             [com.stuartsierra.component :as component]
             [ring.adapter.jetty :refer [run-jetty]]))
@@ -11,12 +12,14 @@
     (if server
       this
       (let [{:keys [host port] :or {host "localhost" port 8080}} (:server config)
-            conn (:conn database)
+            auth-opts    (get config :auth {})
+            conn         (:conn database)
             base-handler (handler-fn)
-            handler (-> base-handler
-                        (wrap-connection conn)
-                        wrap-exception)
-            http-srv (run-jetty handler {:host host :port port :join? false})]
+            handler      (-> base-handler
+                             (wrap-connection conn)
+                             (wrap-authentication auth-opts)
+                             wrap-exception)
+            http-srv     (run-jetty handler {:host host :port port :join? false})]
         (log/infof "Web server running at %s:%s" host port)
         (assoc this :server http-srv))))
 
@@ -25,8 +28,7 @@
       (.stop server))
     (assoc this :server nil)))
 
-(defn create
-  [router config]
+(defn create [router config]
   (component/using (map->WebServer {:handler-fn router
-                                    :config config})
+                                    :config     config})
                    [:database]))
