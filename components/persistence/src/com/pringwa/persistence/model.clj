@@ -49,10 +49,12 @@
         (update :where conj '(visible? ?doc)))
     q))
 
-(defn- visibility-args [db access-policy pattern]
+(defn- entity-args
+  "Base args vector: [db] plus rules when present.
+  Each query function appends its own positional bindings after this."
+  [db access-policy]
   (cond-> [db]
-    (:entity-rules access-policy) (conj (:entity-rules access-policy))
-    true                          (conj pattern)))
+    (:entity-rules access-policy) (conj (:entity-rules access-policy))))
 
 ;; ---------------------------------------------------------------------------
 ;; Query functions
@@ -71,8 +73,7 @@
                         :where '[[?doc :document/id ?doc-id]]}
                        access-policy)]
          (ffirst (d/q {:query q
-                       :args  (into (visibility-args db access-policy pattern)
-                                    [id])})))))))
+                       :args  (conj (entity-args db access-policy) id)})))))))
 
 (defn find-all-documents
   ([db]              (find-all-documents db nil))
@@ -82,12 +83,12 @@
      (fn []
        (let [pattern (effective-pattern access-policy)
              q       (apply-visibility
-                       {:find  [(list 'pull '?doc pattern)]
+                       {:find  [(list 'pull '?doc 'pattern)]
                         :in    '[$ pattern]
                         :where '[[?doc :document/id]]}
                        access-policy)]
          (mapv first (d/q {:query q
-                           :args  (visibility-args db access-policy pattern)})))))))
+                           :args  (conj (entity-args db access-policy) pattern)})))))))
 
 (defn find-document-by-type
   ([db type]              (find-document-by-type db type nil))
@@ -97,14 +98,13 @@
      (fn []
        (let [pattern (effective-pattern access-policy)
              q       (apply-visibility
-                       {:find  [(list 'pull '?doc pattern)]
+                       {:find  [(list 'pull '?doc 'pattern)]
                         :in    '[$ ?type-str pattern]
                         :where '[[?doc :document/indicators ?ind]
                                  [?ind :indicator/type ?type-str]]}
                        access-policy)]
          (mapv first (d/q {:query q
-                           :args  (into (visibility-args db access-policy pattern)
-                                        [type])})))))))
+                           :args  (into (entity-args db access-policy) [type pattern])})))))))
 
 (defn search-documents
   "Executes a compiled Datomic query derived from a criteria map.
@@ -118,4 +118,4 @@
              {:keys [query]} (query/build-query criteria)
              q       (apply-visibility query access-policy)]
          (mapv first (d/q {:query q
-                           :args  (visibility-args db access-policy pattern)})))))))
+                           :args  (conj (entity-args db access-policy) pattern)})))))))

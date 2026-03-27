@@ -1,8 +1,7 @@
 (ns com.pringwa.service.handler.indicators-spec
   (:require [speclj.core :refer [describe it should should-contain should= with-stubs]]
             [com.pringwa.service.handler.indicators :as indicators]
-            [com.pringwa.persistence.interface :as store]
-            [datomic.client.api :as d]))
+            [com.pringwa.persistence.interface :as store]))
 
 (def ^:private mock-documents
   [{:document/id "doc-1"
@@ -37,77 +36,68 @@
 
   (describe "without type filter"
     (it "returns HTTP 200"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
+      (with-redefs [store/find-all-documents (constantly mock-documents)
                     store/transform-keys (constantly transformed-documents)]
-        (let [response (indicators/handler {:conn :mock-conn :query-params {}})]
+        (let [response (indicators/handler {:db :mock-db :access-policy nil :query-params {}})]
           (should= 200 (:status response)))))
 
     (it "returns body with :results key"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
+      (with-redefs [store/find-all-documents (constantly mock-documents)
                     store/transform-keys (constantly transformed-documents)]
-        (let [response (indicators/handler {:conn :mock-conn :query-params {}})]
+        (let [response (indicators/handler {:db :mock-db :access-policy nil :query-params {}})]
           (should-contain :results (:body response)))))
 
     (it "returns empty result when no documents exist"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly [])
+      (with-redefs [store/find-all-documents (constantly [])
                     store/transform-keys (constantly [])]
-        (let [response (indicators/handler {:conn :mock-conn :query-params {}})]
+        (let [response (indicators/handler {:db :mock-db :access-policy nil :query-params {}})]
           (should= {:results []} (:body response)))))
 
     (it "calls find-all-documents when type param is absent"
       (let [find-all-called? (atom false)]
-        (with-redefs [d/db (constantly :mock-db)
-                      store/find-all-documents (fn [_]
+        (with-redefs [store/find-all-documents (fn [_db _policy]
                                                  (reset! find-all-called? true)
                                                  mock-documents)
                       store/transform-keys (constantly transformed-documents)]
-          (indicators/handler {:conn :mock-conn :query-params {}})
+          (indicators/handler {:db :mock-db :access-policy nil :query-params {}})
           (should @find-all-called?))))
 
     (it "calls find-all-documents when type param is an empty string"
       (let [find-all-called? (atom false)]
-        (with-redefs [d/db (constantly :mock-db)
-                      store/find-all-documents (fn [_]
+        (with-redefs [store/find-all-documents (fn [_db _policy]
                                                  (reset! find-all-called? true)
                                                  mock-documents)
                       store/transform-keys (constantly transformed-documents)]
-          (indicators/handler {:conn :mock-conn :query-params {"type" ""}})
+          (indicators/handler {:db :mock-db :access-policy nil :query-params {"type" ""}})
           (should @find-all-called?))))
 
     (it "calls find-all-documents when type param is whitespace only"
       (let [find-all-called? (atom false)]
-        (with-redefs [d/db (constantly :mock-db)
-                      store/find-all-documents (fn [_]
+        (with-redefs [store/find-all-documents (fn [_db _policy]
                                                  (reset! find-all-called? true)
                                                  mock-documents)
                       store/transform-keys (constantly transformed-documents)]
-          (indicators/handler {:conn :mock-conn :query-params {"type" "   "}})
+          (indicators/handler {:db :mock-db :access-policy nil :query-params {"type" "   "}})
           (should @find-all-called?)))))
 
   (describe "with type filter"
     (it "calls find-document-by-type when type param is provided"
       (let [captured-type (atom nil)]
-        (with-redefs [d/db (constantly :mock-db)
-                      store/find-document-by-type (fn [_ t]
+        (with-redefs [store/find-document-by-type (fn [_db t _policy]
                                                     (reset! captured-type t)
                                                     [(first mock-documents)])
                       store/transform-keys (constantly [(first transformed-documents)])]
-          (indicators/handler {:conn :mock-conn :query-params {"type" "IPv4"}})
+          (indicators/handler {:db :mock-db :access-policy nil :query-params {"type" "IPv4"}})
           (should= "IPv4" @captured-type))))
 
     (it "returns HTTP 200 when filtering by type"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-document-by-type (constantly [(first mock-documents)])
+      (with-redefs [store/find-document-by-type (constantly [(first mock-documents)])
                     store/transform-keys (constantly [(first transformed-documents)])]
-        (let [response (indicators/handler {:conn :mock-conn :query-params {"type" "IPv4"}})]
+        (let [response (indicators/handler {:db :mock-db :access-policy nil :query-params {"type" "IPv4"}})]
           (should= 200 (:status response)))))
 
     (it "returns empty result when no documents match the type"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-document-by-type (constantly [])
+      (with-redefs [store/find-document-by-type (constantly [])
                     store/transform-keys (constantly [])]
-        (let [response (indicators/handler {:conn :mock-conn :query-params {"type" "URL"}})]
+        (let [response (indicators/handler {:db :mock-db :access-policy nil :query-params {"type" "URL"}})]
           (should= {:results []} (:body response)))))))

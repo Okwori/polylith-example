@@ -1,8 +1,7 @@
 (ns com.pringwa.service.handler.filter-indicators-spec
   (:require [speclj.core :refer [describe it should-contain should=]]
             [com.pringwa.service.handler.filter-indicators :as filter-indicators]
-            [com.pringwa.persistence.interface :as store]
-            [datomic.client.api :as d]))
+            [com.pringwa.persistence.interface :as store]))
 
 (def ^:private mock-documents
   [{:document/id "doc-1"
@@ -25,57 +24,48 @@
     :author_name "Mandiant" :tags ["russia" "apt"]}])
 
 (defn- make-request [body-params]
-  {:conn :mock-conn :body-params body-params})
+  {:db :mock-db :access-policy nil :body-params body-params})
 
 (describe "POST /v1/indicators/search"
   (describe "validation"
     (it "returns HTTP 400 when body is empty"
-      (with-redefs [d/db (constantly :mock-db)]
-        (should= 400 (:status (filter-indicators/handler (make-request {}))))))
+      (should= 400 (:status (filter-indicators/handler (make-request {})))))
 
     (it "returns HTTP 400 when body is nil"
-      (with-redefs [d/db (constantly :mock-db)]
-        (should= 400 (:status (filter-indicators/handler (make-request nil))))))
+      (should= 400 (:status (filter-indicators/handler (make-request nil)))))
 
     (it "returns an :error key in the body on 400"
-      (with-redefs [d/db (constantly :mock-db)]
-        (should-contain :error (:body (filter-indicators/handler (make-request {}))))))
+      (should-contain :error (:body (filter-indicators/handler (make-request {})))))
 
     (it "returns HTTP 400 for unknown criteria keys"
-      (with-redefs [d/db (constantly :mock-db)]
-        (should= 400 (:status (filter-indicators/handler (make-request {:adversarry "typo"}))))))
+      (should= 400 (:status (filter-indicators/handler (make-request {:adversarry "typo"})))))
 
     (it "returns :error body for unknown criteria keys"
-      (with-redefs [d/db (constantly :mock-db)]
-        (should-contain :error (:body (filter-indicators/handler (make-request {:unknown-field "value"})))))))
+      (should-contain :error (:body (filter-indicators/handler (make-request {:unknown-field "value"}))))))
 
   (describe "successful search — delegates to search-documents"
     (it "returns HTTP 200 when criteria are valid"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/search-documents (constantly mock-documents)
+      (with-redefs [store/search-documents (constantly mock-documents)
                     store/transform-keys identity]
         (should= 200 (:status (filter-indicators/handler (make-request {:adversary "Plead"}))))))
 
     (it "returns body with :results key"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/search-documents (constantly mock-documents)
+      (with-redefs [store/search-documents (constantly mock-documents)
                     store/transform-keys identity]
         (should-contain :results (:body (filter-indicators/handler (make-request {:adversary "Plead"}))))))
 
     (it "passes the criteria map directly to search-documents"
       (let [received-criteria (atom nil)]
-        (with-redefs [d/db (constantly :mock-db)
-                      store/search-documents (fn [_db criteria]
+        (with-redefs [store/search-documents (fn [_db criteria _policy]
                                                (reset! received-criteria criteria)
                                                mock-documents)
                       store/transform-keys identity]
           (filter-indicators/handler (make-request {:adversary "Plead"}))
           (should= {:adversary "Plead"} @received-criteria))))
 
-    (it "passes the db value from conn to search-documents"
+    (it "passes the db value to search-documents"
       (let [received-db (atom nil)]
-        (with-redefs [d/db (constantly :mock-db)
-                      store/search-documents (fn [db _criteria]
+        (with-redefs [store/search-documents (fn [db _criteria _policy]
                                                (reset! received-db db)
                                                mock-documents)
                       store/transform-keys identity]
@@ -83,23 +73,20 @@
           (should= :mock-db @received-db))))
 
     (it "returns results via transform-keys"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/search-documents (constantly mock-documents)
+      (with-redefs [store/search-documents (constantly mock-documents)
                     store/transform-keys (constantly transformed-documents)]
         (should= transformed-documents
                  (-> (filter-indicators/handler (make-request {:adversary "Plead"}))
                      :body :results))))
 
     (it "returns empty results when search-documents returns nothing"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/search-documents (constantly [])
+      (with-redefs [store/search-documents (constantly [])
                     store/transform-keys (constantly [])]
         (should= [] (-> (filter-indicators/handler (make-request {:adversary "Unknown"}))
                         :body :results))))
 
     (it "searches by tags array (OR membership)"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/search-documents (fn [_db criteria]
+      (with-redefs [store/search-documents (fn [_db criteria _policy]
                                              (filter #(some (set (:document/tags %))
                                                             (:tags criteria))
                                                      mock-documents))
@@ -109,8 +96,7 @@
 
     (it "combines multiple criteria in a single search-documents call"
       (let [call-count (atom 0)]
-        (with-redefs [d/db (constantly :mock-db)
-                      store/search-documents (fn [_db _criteria]
+        (with-redefs [store/search-documents (fn [_db _criteria _policy]
                                                (swap! call-count inc)
                                                mock-documents)
                       store/transform-keys identity]
