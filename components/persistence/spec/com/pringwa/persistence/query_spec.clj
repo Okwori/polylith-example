@@ -7,7 +7,7 @@
 ;; ---------------------------------------------------------------------------
 
 (defn- where [criteria]
-  (-> (query/compile criteria) :query :where))
+  (-> (query/build-query criteria) :query :where))
 
 (defn- or-clauses [criteria]
   (filter list? (where criteria)))
@@ -16,18 +16,18 @@
 ;; Query structure
 ;; ---------------------------------------------------------------------------
 
-(describe "query/compile"
+(describe "query/build-query"
   (describe "query structure"
     (it "returns a map with a :query key"
-      (should-contain :query (query/compile {})))
+      (should-contain :query (query/build-query {})))
 
     (it "sets :find to a pull on ?doc with pattern"
       (should= '[(pull ?doc pattern)]
-               (-> (query/compile {:adversary "X"}) :query :find)))
+               (-> (query/build-query {:adversary "X"}) :query :find)))
 
     (it "sets :in to bind $ and pattern"
       (should= '[$ pattern]
-               (-> (query/compile {:adversary "X"}) :query :in))))
+               (-> (query/build-query {:adversary "X"}) :query :in))))
 
   ;; -------------------------------------------------------------------------
   ;; Anchor clause
@@ -41,7 +41,7 @@
       (should= [['?doc :document/id]] (where {})))
 
     (it "remains first when criteria are provided"
-      (should= ['?doc :document/id] (first (where {:adversary "Plead"})))))
+      (should= ['?doc :document/id] (first (where {:tlp "white"})))))
 
   ;; -------------------------------------------------------------------------
   ;; Scalar (db.cardinality/one) attributes
@@ -49,21 +49,21 @@
 
   (describe "scalar criteria"
     (it "compiles a scalar value to an equality clause"
-      (should-contain ['?doc :document/adversary "Plead"]
-                      (where {:adversary "Plead"})))
-
-    (it "qualifies the attribute into the :document namespace"
       (should-contain ['?doc :document/tlp "white"]
                       (where {:tlp "white"})))
 
+    (it "qualifies the attribute into the :document namespace"
+      (should-contain ['?doc :document/id "abc123"]
+                      (where {:id "abc123"})))
+
     (it "ANDs multiple scalar criteria (one clause each)"
-      (let [clauses (where {:adversary "Plead" :tlp "white"})]
+      (let [clauses (where {:tlp "white" :id "abc123"})]
         (should= 3 (count clauses))
-        (should-contain ['?doc :document/adversary "Plead"] clauses)
-        (should-contain ['?doc :document/tlp "white"] clauses)))
+        (should-contain ['?doc :document/tlp "white"] clauses)
+        (should-contain ['?doc :document/id "abc123"] clauses)))
 
     (it "produces no or-clauses for scalar criteria"
-      (should= [] (or-clauses {:adversary "Plead" :tlp "white"}))))
+      (should= [] (or-clauses {:tlp "white" :id "abc123"}))))
 
   ;; -------------------------------------------------------------------------
   ;; Many-cardinality attributes

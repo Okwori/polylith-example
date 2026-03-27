@@ -72,14 +72,14 @@
 ;; Public API
 ;; ---------------------------------------------------------------------------
 
-(defn compile
+(defn build-query
   "Compiles a criteria map into a Datomic pull-query.
 
   Returns:
     {:query {:find [...] :in [...] :where [...]}}
 
   The caller supplies :args [db pattern] at query time:
-    (d/q {:query (:query (compile criteria)) :args [db pattern]})"
+    (d/q {:query (:query (build-query criteria)) :args [db pattern]})"
   [criteria]
   {:query {:find  '[(pull ?doc pattern)]
            :in    '[$ pattern]

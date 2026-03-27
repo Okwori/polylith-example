@@ -71,4 +71,4 @@
 
     (it "cache works normally after clear!"
       (cache/clear!)
-      (should= :fresh (cache/lookup-or-miss :k (constantly :fresh))))))
+      (should= :fresh (cache/lookup-or-miss :k (constantly :fresh)))))))

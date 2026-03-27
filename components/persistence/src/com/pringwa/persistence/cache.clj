@@ -10,7 +10,8 @@
     - old :t   → naturally displaced by LRU eviction
 
   This gives cache-correctness without TTL tuning or manual invalidation."
-  (:require [clojure.core.cache.wrapped :as cw]))
+  (:require [clojure.core.cache :as c]
+            [clojure.core.cache.wrapped :as cw]))
 
 ;; ---------------------------------------------------------------------------
 ;; Cache store
@@ -21,8 +22,12 @@
   256 covers all realistic query combinations with minimal memory footprint."
   256)
 
+(defn- empty-cache []
+  (c/lru-cache-factory {} :threshold threshold))
+
+;; store is an atom wrapping a plain cache map — managed via cw/* functions.
 (def ^:private store
-  (cw/lru-cache-factory {} :threshold threshold))
+  (atom (empty-cache)))
 
 ;; ---------------------------------------------------------------------------
 ;; Public API
@@ -44,4 +49,4 @@
   "Resets the cache to an empty state.
   Intended for use in tests and application restart scenarios."
   []
-  (reset! store (cw/lru-cache-factory {} :threshold threshold)))
+  (reset! store (empty-cache)))

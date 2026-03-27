@@ -64,5 +64,5 @@
   (cache/lookup-or-miss
     [(cache/basis-t db) :search criteria]
     (fn []
-      (let [{:keys [query]} (query/compile criteria)]
+      (let [{:keys [query]} (query/build-query criteria)]
         (mapv first (d/q {:query query :args [db document-pattern]}))))))
