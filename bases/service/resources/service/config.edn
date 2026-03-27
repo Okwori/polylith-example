@@ -1,10 +1,13 @@
-{:data     {:filename   "persistence/indicators.json"
-            :batch-size 3}
+{:data {:filename   "persistence/indicators.json"
+        :batch-size #profile {:dev 3 :default 100}}
 
- :database {:client  {:server-type :datomic-local
-                      :storage-dir :mem
-                      :system      "indicators"}
-            :db-name "indicators"}
+ :database #profile
+           {:dev     {:client  {:server-type :datomic-local
+                                :storage-dir :mem
+                                :system      "indicators"}
+                      :db-name "indicators"}
+            :staging {:db-name #or [#env DATOMIC_DB_NAME "indicators-staging"]}
+            :prod    {:db-name #or [#env DATOMIC_DB_NAME "indicators-prod"]}}
 
- :server   {:host #or [#env HOST "localhost"]
-            :port #long #or [#env PORT 8080]}}
+ :server {:host #or [#env HOST "localhost"]
+          :port #long #or [#env PORT 8080]}}

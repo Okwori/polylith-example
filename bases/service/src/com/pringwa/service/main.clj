@@ -8,21 +8,22 @@
             [com.stuartsierra.component :as component])
   (:gen-class))
 
+(defn config
+  ([]
+   (config (keyword (or (System/getenv "APP_PROFILE") "dev"))))
+  ([profile]
+   (aero/read-config (io/resource "service/config.edn") {:profile profile})))
+
 (defn new-system
   [config]
   (component/system-map
     :database (db/create config)
-    :server (server/create #'routes/router config)))
-
-(defn config
-  []
-  (->> (io/resource "service/config.edn")
-       (aero/read-config)))
+    :server   (server/create #'routes/router config)))
 
 (defn -main [& [host port]]
   (let [host (or host "localhost")
         port (or (cond-> port (string? port) Integer/parseInt) 8080)
-        _ (log/infof "Starting up on port %s:%s" host port)]
+        _    (log/infof "Starting up on port %s:%s" host port)]
     (->> (config)
          (new-system)
          (component/start))))

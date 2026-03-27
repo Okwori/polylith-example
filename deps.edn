@@ -1,4 +1,6 @@
-{:aliases  {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.12"}
+{:mvn/repos {"cognitect-dev-tools" {:url "https://dev-tools.cognitect.com/maven/releases/"}}
+
+ :aliases  {:build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.12"}
                            org.clojure/tools.deps        {:mvn/version "0.28.1569"}}
                     :paths ["build/resources"]
                     :ns-default build}
@@ -29,4 +31,10 @@
                    :extra-deps {polylith/clj-poly {:mvn/version "0.3.32"}}}
 
             :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.16.0"}}
-                     :main-opts ["-m" "cljfmt.main"]}}}
+                     :main-opts ["-m" "cljfmt.main"]}
+
+            ;; Datomic Ion push/deploy tooling
+            ;; Run: clojure -A:dev:ion push   (from project root)
+            ;;      clojure -A:dev:ion deploy
+            :ion {:extra-deps {com.datomic/ion {:mvn/version "0.9.58"}}
+                  :main-opts  ["-m" "datomic.ion.dev"]}}}
