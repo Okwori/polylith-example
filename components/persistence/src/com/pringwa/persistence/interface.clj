@@ -18,6 +18,11 @@
 (defn find-document-by-type [db type]
   (model/find-document-by-type db type))
 
+(defn search-documents
+  "Searches documents by criteria map, pushing filtering into Datomic."
+  [db criteria]
+  (model/search-documents db criteria))
+
 (defn create
   [config]
   (db/new-database config))

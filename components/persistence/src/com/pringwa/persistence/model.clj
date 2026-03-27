@@ -1,5 +1,7 @@
 (ns com.pringwa.persistence.model
-  (:require [datomic.client.api :as d]))
+  (:require [com.pringwa.persistence.cache :as cache]
+            [com.pringwa.persistence.query :as query]
+            [datomic.client.api :as d]))
 
 (def document-pattern
   [:document/id
@@ -28,22 +30,39 @@
      :indicator/content]}])
 
 (defn find-document [db id]
-  (let [query '{:find [(pull ?document pattern)]
+  (cache/lookup-or-miss
+    [(cache/basis-t db) :find-doc id]
+    (fn []
+      (let [q '{:find [(pull ?document pattern)]
                 :in [$ ?document-id pattern]
                 :where [[?document :document/id ?document-id]]}]
-    (ffirst (d/q {:query query, :args [db id document-pattern]}))))
+        (ffirst (d/q {:query q :args [db id document-pattern]}))))))
 
 (defn find-all-documents [db]
-  (let [query '{:find [(pull ?document pattern)]
+  (cache/lookup-or-miss
+    [(cache/basis-t db) :find-all]
+    (fn []
+      (let [q '{:find [(pull ?document pattern)]
                 :in [$ pattern]
-                :where [[?document :document/id]]}
-        result (d/q {:query query, :args [db document-pattern]})]
-    (mapv first result)))
+                :where [[?document :document/id]]}]
+        (mapv first (d/q {:query q :args [db document-pattern]}))))))
 
 (defn find-document-by-type [db type]
-  (let [query '{:find [(pull ?document pattern)]
+  (cache/lookup-or-miss
+    [(cache/basis-t db) :find-by-type type]
+    (fn []
+      (let [q '{:find [(pull ?document pattern)]
                 :in [$ ?type-str pattern]
                 :where [[?document :document/indicators ?indicators]
-                        [?indicators :indicator/type ?type-str]]}
-        result (d/q {:query query, :args [db type document-pattern]})]
-    (mapv first result)))
+                        [?indicators :indicator/type ?type-str]]}]
+        (mapv first (d/q {:query q :args [db type document-pattern]}))))))
+
+(defn search-documents
+  "Executes a compiled Datomic query derived from a criteria map.
+  Pushes all filtering into the database — no in-memory scan."
+  [db criteria]
+  (cache/lookup-or-miss
+    [(cache/basis-t db) :search criteria]
+    (fn []
+      (let [{:keys [query]} (query/compile criteria)]
+        (mapv first (d/q {:query query :args [db document-pattern]}))))))

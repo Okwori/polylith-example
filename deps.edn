@@ -22,9 +22,11 @@
 
             :test {:main-opts ["-m" "speclj.main" "-c"
                               "bases/service/spec"
-                              "components/server/spec"]
+                              "components/server/spec"
+                              "components/persistence/spec"]
                    :extra-paths ["bases/service/spec"
-                                 "components/server/spec"]
+                                 "components/server/spec"
+                                 "components/persistence/spec"]
                    :extra-deps  {speclj/speclj {:mvn/version "3.12.0"}}}
 
             :poly {:main-opts  ["-m" "polylith.clj.core.poly-cli.core"]

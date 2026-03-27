@@ -27,7 +27,7 @@
 (defn- make-request [body-params]
   {:conn :mock-conn :body-params body-params})
 
-(describe "POST /indicators/search"
+(describe "POST /v1/indicators/search"
   (describe "validation"
     (it "returns HTTP 400 when body is empty"
       (with-redefs [d/db (constantly :mock-db)]
@@ -45,74 +45,74 @@
       (with-redefs [d/db (constantly :mock-db)]
         (should= 400 (:status (filter-indicators/handler (make-request {:adversarry "typo"}))))))
 
-    (it "returns :error for unknown criteria keys"
+    (it "returns :error body for unknown criteria keys"
       (with-redefs [d/db (constantly :mock-db)]
         (should-contain :error (:body (filter-indicators/handler (make-request {:unknown-field "value"})))))))
 
-  (describe "successful search"
-    (it "returns HTTP 200 when criteria are provided"
+  (describe "successful search — delegates to search-documents"
+    (it "returns HTTP 200 when criteria are valid"
       (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (constantly true)
-                    store/transform-keys (constantly transformed-documents)]
+                    store/search-documents (constantly mock-documents)
+                    store/transform-keys identity]
         (should= 200 (:status (filter-indicators/handler (make-request {:adversary "Plead"}))))))
 
     (it "returns body with :results key"
       (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (constantly true)
-                    store/transform-keys (constantly transformed-documents)]
+                    store/search-documents (constantly mock-documents)
+                    store/transform-keys identity]
         (should-contain :results (:body (filter-indicators/handler (make-request {:adversary "Plead"}))))))
 
-    (it "returns empty results when no documents match"
+    (it "passes the criteria map directly to search-documents"
+      (let [received-criteria (atom nil)]
+        (with-redefs [d/db (constantly :mock-db)
+                      store/search-documents (fn [_db criteria]
+                                               (reset! received-criteria criteria)
+                                               mock-documents)
+                      store/transform-keys identity]
+          (filter-indicators/handler (make-request {:adversary "Plead"}))
+          (should= {:adversary "Plead"} @received-criteria))))
+
+    (it "passes the db value from conn to search-documents"
+      (let [received-db (atom nil)]
+        (with-redefs [d/db (constantly :mock-db)
+                      store/search-documents (fn [db _criteria]
+                                               (reset! received-db db)
+                                               mock-documents)
+                      store/transform-keys identity]
+          (filter-indicators/handler (make-request {:adversary "Plead"}))
+          (should= :mock-db @received-db))))
+
+    (it "returns results via transform-keys"
       (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (constantly false)
+                    store/search-documents (constantly mock-documents)
+                    store/transform-keys (constantly transformed-documents)]
+        (should= transformed-documents
+                 (-> (filter-indicators/handler (make-request {:adversary "Plead"}))
+                     :body :results))))
+
+    (it "returns empty results when search-documents returns nothing"
+      (with-redefs [d/db (constantly :mock-db)
+                    store/search-documents (constantly [])
                     store/transform-keys (constantly [])]
-        (let [response (filter-indicators/handler (make-request {:adversary "Unknown"}))]
-          (should= [] (-> response :body :results)))))
+        (should= [] (-> (filter-indicators/handler (make-request {:adversary "Unknown"}))
+                        :body :results))))
 
-    (it "filters by adversary"
+    (it "searches by tags array (OR membership)"
       (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (fn [doc criteria]
-                                     (= (:document/adversary doc) (:adversary criteria)))
-                    store/transform-keys (constantly [(first transformed-documents)])]
-        (let [response (filter-indicators/handler (make-request {:adversary "Plead"}))]
-          (should= 1 (count (-> response :body :results))))))
+                    store/search-documents (fn [_db criteria]
+                                             (filter #(some (set (:document/tags %))
+                                                            (:tags criteria))
+                                                     mock-documents))
+                    store/transform-keys identity]
+        (let [response (filter-indicators/handler (make-request {:tags ["china" "russia"]}))]
+          (should= 2 (count (-> response :body :results))))))
 
-    (it "filters by tlp"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (fn [doc criteria]
-                                     (= (:document/tlp doc) (:tlp criteria)))
-                    store/transform-keys (constantly [(first transformed-documents)])]
-        (let [response (filter-indicators/handler (make-request {:tlp "white"}))]
-          (should= 1 (count (-> response :body :results))))))
-
-    (it "filters by author"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (fn [doc criteria]
-                                     (= (:document/author_name doc) (:author_name criteria)))
-                    store/transform-keys (constantly [(first transformed-documents)])]
-        (let [response (filter-indicators/handler (make-request {:author_name "AlienVault"}))]
-          (should= 1 (count (-> response :body :results))))))
-
-    (it "applies multiple criteria (AND logic)"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (fn [doc criteria]
-                                     (and (= (:document/adversary doc) (:adversary criteria))
-                                          (= (:document/tlp doc) (:tlp criteria))))
-                    store/transform-keys (constantly [(first transformed-documents)])]
-        (let [response (filter-indicators/handler (make-request {:adversary "Plead" :tlp "white"}))]
-          (should= 1 (count (-> response :body :results))))))
-
-    (it "returns empty when combined criteria match no documents"
-      (with-redefs [d/db (constantly :mock-db)
-                    store/find-all-documents (constantly mock-documents)
-                    store/matches? (constantly false)
-                    store/transform-keys (constantly [])]
-        (let [response (filter-indicators/handler (make-request {:adversary "Plead" :tlp "green"}))]
-          (should= [] (-> response :body :results)))))))
+    (it "combines multiple criteria in a single search-documents call"
+      (let [call-count (atom 0)]
+        (with-redefs [d/db (constantly :mock-db)
+                      store/search-documents (fn [_db _criteria]
+                                               (swap! call-count inc)
+                                               mock-documents)
+                      store/transform-keys identity]
+          (filter-indicators/handler (make-request {:adversary "Plead" :tlp "white"}))
+          (should= 1 @call-count))))))

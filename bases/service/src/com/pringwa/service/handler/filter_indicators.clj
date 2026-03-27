@@ -22,9 +22,8 @@
 
       :else
       {:status 200
-       :body   {:results (->> (store/find-all-documents (d/db conn))
-                              (filter #(store/matches? % param))
-                              store/transform-keys)}})))
+       :body   {:results (-> (store/search-documents (d/db conn) param)
+                             store/transform-keys)}})))
 
 (defn handler
   [{:keys [body-params conn]}]
