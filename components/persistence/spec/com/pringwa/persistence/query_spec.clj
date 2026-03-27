@@ -63,7 +63,11 @@
         (should-contain ['?doc :document/id "abc123"] clauses)))
 
     (it "produces no or-clauses for scalar criteria"
-      (should= [] (or-clauses {:tlp "white" :id "abc123"}))))
+      (should= [] (or-clauses {:tlp "white" :id "abc123"})))
+
+    (it "nil value produces a nil equality clause"
+      (should-contain ['?doc :document/tlp nil]
+                      (where {:tlp nil}))))
 
   ;; -------------------------------------------------------------------------
   ;; Many-cardinality attributes
@@ -98,7 +102,11 @@
 
     (it ":targeted_countries is treated as a :many attr"
       (should-contain ['?doc :document/targeted_countries "Kuwait"]
-                      (where {:targeted_countries "Kuwait"}))))
+                      (where {:targeted_countries "Kuwait"})))
+
+    (it "empty vector on a :many attr adds no clause (no constraint)"
+      (let [clauses (where {:tags []})]
+        (should= [['?doc :document/id]] clauses))))
 
   ;; -------------------------------------------------------------------------
   ;; Fulltext-indexed attributes — scalar equality (Datomic Local compatible)

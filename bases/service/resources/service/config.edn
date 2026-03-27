@@ -6,8 +6,16 @@
                                 :storage-dir :mem
                                 :system      "indicators"}
                       :db-name "indicators"}
-            :staging {:db-name #or [#env DATOMIC_DB_NAME "indicators-staging"]}
-            :prod    {:db-name #or [#env DATOMIC_DB_NAME "indicators-prod"]}}
+            :staging {:client  {:server-type :cloud
+                                :region      #or [#env DATOMIC_REGION "us-east-1"]
+                                :system      #or [#env DATOMIC_SYSTEM "indicators-staging"]
+                                :endpoint    #env DATOMIC_ENDPOINT}
+                      :db-name #or [#env DATOMIC_DB_NAME "indicators-staging"]}
+            :prod    {:client  {:server-type :cloud
+                                :region      #or [#env DATOMIC_REGION "us-east-1"]
+                                :system      #or [#env DATOMIC_SYSTEM "indicators-prod"]
+                                :endpoint    #env DATOMIC_ENDPOINT}
+                      :db-name #or [#env DATOMIC_DB_NAME "indicators-prod"]}}
 
  :server {:host #or [#env HOST "localhost"]
           :port #long #or [#env PORT 8080]}}

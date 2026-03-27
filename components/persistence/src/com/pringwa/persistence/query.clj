@@ -47,13 +47,15 @@
   [['?doc (doc-attr k) v]])
 
 (defn- membership-clauses
-  "Produces a single equality clause for one value, or an `or` clause for many."
+  "Produces a single equality clause for one value, or an `or` clause for many.
+  Returns an empty vector for an empty collection (no constraint added)."
   [k values]
   (let [attr   (doc-attr k)
         values (if (sequential? values) values [values])]
-    (if (= 1 (count values))
-      [['?doc attr (first values)]]
-      [(apply list 'or (map (fn [v] ['?doc attr v]) values))])))
+    (cond
+      (empty? values)    []
+      (= 1 (count values)) [['?doc attr (first values)]]
+      :else [(apply list 'or (map (fn [v] ['?doc attr v]) values))])))
 
 (defn- entry->clauses [[k v]]
   (if (contains? many-attrs k)
