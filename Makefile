@@ -4,7 +4,7 @@
 
 .PHONY: help install clean build run test spec-test install-hooks docker-build \
         docker-run docker-stop format-check api-health api-indicators \
-        api-indicators-type api-indicator api-search info
+        api-indicators-type api-indicator api-search export-openapi info
 
 # Default target
 .DEFAULT_GOAL := help
@@ -129,6 +129,11 @@ api-search: ## Search indicators (usage: make api-search QUERY='{"adversary":"Pl
 	curl -s -X POST http://localhost:$(PORT)/v1/indicators/search \
 		-H "Content-Type: application/json" \
 		-d '$(QUERY)' | jq .
+
+export-openapi: ## Export OpenAPI spec to openapi.json (server must be running)
+	@echo "📄 Exporting OpenAPI spec..."
+	curl -s http://localhost:$(PORT)/swagger.json | jq . > openapi.json
+	@echo "✅ Saved to openapi.json"
 
 # ==============================================================================
 # INFO
