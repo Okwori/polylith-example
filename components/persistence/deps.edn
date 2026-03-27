@@ -3,5 +3,4 @@
            com.datomic/local        {:mvn/version "1.0.291"}
            org.clojure/data.json    {:mvn/version "2.5.2"}
            org.clojure/core.cache   {:mvn/version "1.2.249"}}
- :aliases {:test {:extra-paths ["test" "spec"]
-                  :extra-deps  {speclj/speclj {:mvn/version "3.12.0"}}}}}
+ :aliases {:test {:extra-paths ["test"]}}}

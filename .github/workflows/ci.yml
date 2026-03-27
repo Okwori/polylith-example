@@ -45,8 +45,5 @@ jobs:
       - name: Set up ChromeDriver
         uses: browser-actions/setup-chrome@v1
 
-      - name: Run tests
-        run: clojure -M:poly test
-
       - name: Run specs
         run: clojure -M:dev:test
