@@ -117,15 +117,15 @@
 
   (describe "GET /v1/indicators?type= — filter by indicator type"
     (it "returns only documents with IPv4 indicators"
-      (should= 2 (-> (indicators/handler (req @!conn :query-params {:type "IPv4"}))
+      (should= 2 (-> (indicators/handler (req @!conn :query-params {"type" "IPv4"}))
                      :body :results count)))
 
     (it "returns only documents with URL indicators"
-      (should= 1 (-> (indicators/handler (req @!conn :query-params {:type "URL"}))
+      (should= 1 (-> (indicators/handler (req @!conn :query-params {"type" "URL"}))
                      :body :results count)))
 
     (it "returns empty for an absent indicator type"
-      (should= [] (-> (indicators/handler (req @!conn :query-params {:type "FileHash-MD5"}))
+      (should= [] (-> (indicators/handler (req @!conn :query-params {"type" "FileHash-MD5"}))
                       :body :results))))
 
   ;; -------------------------------------------------------------------------
@@ -138,7 +138,7 @@
 
     (it "returns the correct document"
       (let [result (-> (indicator/handler (req @!conn :path-params {:id "doc-plead"}))
-                       :body :indicator)]
+                       :body :result)]
         (should= "doc-plead" (:id result))
         (should= "Plead"     (:adversary result))))
 
@@ -159,20 +159,20 @@
     (it "returns 400 for unknown criteria keys"
       (should= 400 (:status (filter-indicators/handler (req @!conn :body-params {:adversarry "typo"}))))))
 
-  (describe "POST /v1/indicators/search — fulltext attributes"
-    (it "finds a document by adversary (single-word fulltext)"
+  (describe "POST /v1/indicators/search — text attribute search"
+    (it "finds a document by adversary (exact match)"
       (let [results (-> (filter-indicators/handler (req @!conn :body-params {:adversary "Plead"}))
                         :body :results)]
         (should= 1 (count results))
         (should= "doc-plead" (:id (first results)))))
 
-    (it "finds a document by name (fulltext)"
-      (let [results (-> (filter-indicators/handler (req @!conn :body-params {:name "Lazarus"}))
+    (it "finds a document by name (exact match)"
+      (let [results (-> (filter-indicators/handler (req @!conn :body-params {:name "Lazarus Crypto Theft"}))
                         :body :results)]
         (should= 1 (count results))
         (should= "doc-lazarus" (:id (first results)))))
 
-    (it "finds a document by author_name (fulltext)"
+    (it "finds a document by author_name (exact match)"
       (let [results (-> (filter-indicators/handler (req @!conn :body-params {:author_name "Mandiant"}))
                         :body :results)]
         (should= 1 (count results))

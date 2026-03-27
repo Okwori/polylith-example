@@ -27,8 +27,8 @@
    :indicators [{:indicator "192.168.1.1" :type "IPv4" :id 1}]})
 
 (defn- make-request [id]
-  {:conn :mock-conn
-   :reitit.core/match {:path-params {:id id}}})
+  {:conn        :mock-conn
+   :path-params {:id id}})
 
 (describe "GET /indicators/:id"
   (describe "when document is found"

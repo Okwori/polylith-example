@@ -101,74 +101,51 @@
                       (where {:targeted_countries "Kuwait"}))))
 
   ;; -------------------------------------------------------------------------
-  ;; Fulltext attributes
+  ;; Fulltext-indexed attributes — scalar equality (Datomic Local compatible)
+  ;; Note: schema declares :db/fulltext true on these attrs for Cloud indexing;
+  ;; the DSL uses attribute equality which works across all Datomic flavours.
   ;; -------------------------------------------------------------------------
 
-  (describe "fulltext criteria"
-    (it "adversary produces a fulltext clause, not an equality clause"
-      (let [clauses (where {:adversary "Plead"})
-            ft-clause (second clauses)]
-        (should-be vector? ft-clause)
-        (should-be list? (first ft-clause))
-        (should= 'fulltext (first (first ft-clause)))))
+  (describe "fulltext-indexed attr criteria"
+    (it "adversary produces a scalar equality clause"
+      (should-contain ['?doc :document/adversary "Plead"]
+                      (where {:adversary "Plead"})))
 
-    (it "fulltext clause targets the correct attribute"
-      (let [ft-clause (second (where {:adversary "Plead"}))
-            fn-call (first ft-clause)]
-        (should= :document/adversary (nth fn-call 2))))
+    (it "name produces a scalar equality clause"
+      (should-contain ['?doc :document/name "Downloader"]
+                      (where {:name "Downloader"})))
 
-    (it "fulltext clause carries the search term"
-      (let [ft-clause (second (where {:adversary "Plead"}))
-            fn-call (first ft-clause)]
-        (should= "Plead" (nth fn-call 3))))
+    (it "description produces a scalar equality clause"
+      (should-contain ['?doc :document/description "APT"]
+                      (where {:description "APT"})))
 
-    (it "fulltext clause binds ?doc"
-      (let [ft-clause (second (where {:adversary "Plead"}))
-            binding (second ft-clause)]
-        (should= [['?doc]] binding)))
+    (it "author_name produces a scalar equality clause"
+      (should-contain ['?doc :document/author_name "AlienVault"]
+                      (where {:author_name "AlienVault"})))
 
-    (it ":name uses fulltext"
-      (let [ft-clause (second (where {:name "Downloader"}))
-            fn-call (first ft-clause)]
-        (should= :document/name (nth fn-call 2))))
-
-    (it ":description uses fulltext"
-      (let [ft-clause (second (where {:description "APT"}))
-            fn-call (first ft-clause)]
-        (should= :document/description (nth fn-call 2))))
-
-    (it ":author_name uses fulltext"
-      (let [ft-clause (second (where {:author_name "AlienVault"}))
-            fn-call (first ft-clause)]
-        (should= :document/author_name (nth fn-call 2))))
-
-    (it "fulltext does not produce an equality clause"
+    (it "adversary clause has no function-call wrapper"
       (let [clauses (where {:adversary "Plead"})]
-        (should-not-contain ['?doc :document/adversary "Plead"] clauses)))
-
-    (it "fulltext does not produce an equality clause for :name"
-      (let [clauses (where {:name "Downloader"})]
-        (should-not-contain ['?doc :document/name "Downloader"] clauses))))
+        (should-not (some #(and (vector? %) (list? (first %))) clauses)))))
 
   ;; -------------------------------------------------------------------------
   ;; Mixed criteria
   ;; -------------------------------------------------------------------------
 
-  (describe "mixed fulltext + many criteria"
-    (it "produces anchor + fulltext clause + or clause"
+  (describe "mixed scalar + many criteria"
+    (it "produces anchor + equality clause + or clause"
       (let [clauses (where {:adversary "Plead" :tags ["china" "apt"]})]
         (should= 3 (count clauses))))
 
-    (it "includes the fulltext clause for adversary"
-      (let [clauses (where {:adversary "Plead" :tags ["china" "apt"]})]
-        (should-not= nil (some #(and (vector? %) (list? (first %))) clauses))))
+    (it "includes the equality clause for adversary"
+      (should-contain ['?doc :document/adversary "Plead"]
+                      (where {:adversary "Plead" :tags ["china" "apt"]})))
 
     (it "includes the or clause for the :many attr"
       (should-not= [] (or-clauses {:adversary "Plead" :tags ["china" "apt"]})))
 
-    (it ":tlp (scalar) and :name (fulltext) each produce their own clause type"
-      (let [clauses (where {:tlp "white" :name "Plead"})
-            ft-clauses (filter #(and (vector? %) (list? (first %))) clauses)
+    (it ":tlp and :name both produce scalar equality clauses"
+      (let [clauses    (where {:tlp "white" :name "Plead"})
             eq-clauses (filter #(= (first %) '?doc) clauses)]
-        (should= 1 (count ft-clauses))
-        (should= 2 (count eq-clauses))))))
+        (should= 3 (count eq-clauses))
+        (should-contain ['?doc :document/tlp "white"] clauses)
+        (should-contain ['?doc :document/name "Plead"] clauses)))))
