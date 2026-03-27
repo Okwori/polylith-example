@@ -3,6 +3,7 @@
             [com.pringwa.service.handler.filter-indicators :as filter-indicators]
             [com.pringwa.service.handler.indicator :as indicator]
             [com.pringwa.service.handler.indicators :as indicators]
+            [com.pringwa.service.handler.metrics :as metrics]
             [muuntaja.core :as m]
             [reitit.ring :as ring]
             [reitit.ring.coercion :as coercion]
@@ -20,11 +21,12 @@
                                :description "Indicators API"}}
               :handler (swagger/create-swagger-handler)}}]
       ["/healthcheck" {:get healthcheck/handler, :name ::healthcheck}]
+      ["/metrics"     {:get metrics/handler,     :name ::metrics}]
       ["/indicators"
-       ["" {:get {:handler indicators/handler :name ::indicators
+       ["" {:get {:handler    indicators/handler :name ::indicators
                   :parameters {:query {:type string?}}}}]
        ["/search" {:post {:handler filter-indicators/handler :name ::filter-indicator}}]
-       ["/:id" {:get {:handler indicator/handler, :name ::indicator
+       ["/:id" {:get {:handler    indicator/handler, :name ::indicator
                       :parameters {:path {:id string?}}}}]]]
 
      {:conflicts nil
