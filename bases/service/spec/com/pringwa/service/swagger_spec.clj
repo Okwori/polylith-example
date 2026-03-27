@@ -10,7 +10,7 @@
 
   Run alongside the rest of the Speclj suite:
     clojure -M:dev:test"
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [after-all before before-all describe it pending should should-contain]]
             [com.pringwa.service.main :as main]
             [com.stuartsierra.component :as component]
             [etaoin.api :as e]))

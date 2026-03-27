@@ -1,5 +1,5 @@
 (ns com.pringwa.service.handler.indicators-spec
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [describe it should should-contain should= with-stubs]]
             [com.pringwa.service.handler.indicators :as indicators]
             [com.pringwa.persistence.interface :as store]
             [datomic.client.api :as d]))

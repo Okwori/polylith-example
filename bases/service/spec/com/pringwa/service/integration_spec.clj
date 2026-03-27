@@ -7,7 +7,7 @@
 
   Note: persistence internal namespaces (schema, cache) are imported here for
   test-setup purposes only — an accepted Polylith exception for test infrastructure."
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [after-all before before-all describe it should-contain should-not-contain should-not= should=]]
             [com.pringwa.persistence.cache :as cache]
             [com.pringwa.persistence.schema :as schema]
             [com.pringwa.service.handler.filter-indicators :as filter-indicators]

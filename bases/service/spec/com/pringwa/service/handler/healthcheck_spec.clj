@@ -1,5 +1,5 @@
 (ns com.pringwa.service.handler.healthcheck-spec
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [describe it should-be-nil should=]]
             [com.pringwa.service.handler.healthcheck :as healthcheck]))
 
 (describe "healthcheck handler"
