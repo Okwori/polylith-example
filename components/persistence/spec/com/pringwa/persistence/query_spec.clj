@@ -1,5 +1,5 @@
 (ns com.pringwa.persistence.query-spec
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [describe it should-contain should-not should-not-be-nil should-not= should=]]
             [com.pringwa.persistence.query :as query]))
 
 ;; ---------------------------------------------------------------------------

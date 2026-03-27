@@ -1,5 +1,5 @@
 (ns com.pringwa.server.middleware-spec
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [describe it should should-contain should=]]
             [clojure.tools.logging :as log]
             [com.pringwa.server.middleware :as middleware]))
 

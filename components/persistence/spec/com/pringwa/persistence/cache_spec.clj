@@ -1,5 +1,5 @@
 (ns com.pringwa.persistence.cache-spec
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [before describe it should=]]
             [com.pringwa.persistence.cache :as cache]))
 
 (describe "cache"
@@ -54,7 +54,7 @@
         (cache/lookup-or-miss [1 :find-all]              compute)
         (cache/lookup-or-miss [1 :find-by-type "IPv4"]   compute)
         (cache/lookup-or-miss [1 {:adversary "Plead"}]   compute)
-        (should= 3 @call-count)))
+        (should= 3 @call-count))))
 
   (describe "clear!"
     (it "removes all cached entries"
@@ -68,4 +68,4 @@
 
     (it "cache works normally after clear!"
       (cache/clear!)
-      (should= :fresh (cache/lookup-or-miss :k (constantly :fresh)))))))
+      (should= :fresh (cache/lookup-or-miss :k (constantly :fresh))))))

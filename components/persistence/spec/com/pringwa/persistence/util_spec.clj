@@ -1,5 +1,5 @@
 (ns com.pringwa.persistence.util-spec
-  (:require [speclj.core :refer :all]
+  (:require [speclj.core :refer [describe it should should-be-nil should-not should-not-contain should=]]
             [clojure.java.io :as io]
             [com.pringwa.persistence.schema :as schema]
             [com.pringwa.persistence.util :as util]
