@@ -13,4 +13,4 @@
   [{:keys [conn query-params]}]
   (let [type (some-> (get query-params "type") str/trim)]
     {:status 200
-     :body   {:result (result (d/db conn) type)}}))
+     :body   {:results (result (d/db conn) type)}}))

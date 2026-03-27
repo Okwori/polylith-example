@@ -1,6 +1,6 @@
 (ns com.pringwa.server.core
   (:require [clojure.tools.logging :as log]
-            [com.pringwa.server.middleware :refer [wrap-connection]]
+            [com.pringwa.server.middleware :refer [wrap-connection wrap-exception]]
             [com.stuartsierra.component :as component]
             [ring.adapter.jetty :refer [run-jetty]]))
 
@@ -13,7 +13,9 @@
       (let [{:keys [host port] :or {host "localhost" port 8080}} (:server config)
             conn (:conn database)
             base-handler (handler-fn)
-            handler (wrap-connection base-handler conn)
+            handler (-> base-handler
+                        (wrap-connection conn)
+                        wrap-exception)
             http-srv (run-jetty handler {:host host :port port :join? false})]
         (log/infof "Web server running at %s:%s" host port)
         (assoc this :server http-srv))))
