@@ -1,1 +1,4 @@
-{:linters {:deps.edn {:level :off}}}
+{:linters      {:deps.edn {:level :off}}
+ :config-paths ["imports/babashka/fs"
+                "imports/etaoin/etaoin"
+                "imports/hiccup/hiccup"]}
