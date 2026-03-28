@@ -220,6 +220,53 @@
       (should= [] (-> (filter-indicators/handler (req @!conn :body-params {:tlp "green" :tags "china"}))
                       :body :results))))
 
+  ;; -------------------------------------------------------------------------
+  ;; Pagination
+  ;; -------------------------------------------------------------------------
+
+  (describe "pagination — GET /v1/indicators"
+    (it "response includes :total :limit :offset keys"
+      (let [body (:body (indicators/handler (req @!conn :query-params {})))]
+        (should-contain :total body)
+        (should-contain :limit body)
+        (should-contain :offset body)))
+
+    (it "total equals 3 (all fixtures)"
+      (should= 3 (-> (indicators/handler (req @!conn :query-params {}))
+                     :body :total)))
+
+    (it "respects limit query param"
+      (should= 1 (-> (indicators/handler (req @!conn :query-params {"limit" "1"}))
+                     :body :results count)))
+
+    (it "respects offset query param"
+      (let [all    (-> (indicators/handler (req @!conn :query-params {}))
+                       :body :results)
+            paged  (-> (indicators/handler (req @!conn :query-params {"limit" "2" "offset" "1"}))
+                       :body :results)]
+        (should= (subvec (vec all) 1 3) paged)))
+
+    (it "returns empty results when offset exceeds total"
+      (should= [] (-> (indicators/handler (req @!conn :query-params {"offset" "100"}))
+                      :body :results))))
+
+  (describe "pagination — POST /v1/indicators/search"
+    (it "response includes :total :limit :offset keys"
+      (let [body (:body (filter-indicators/handler (req @!conn :body-params {:tlp "white"})))]
+        (should-contain :total body)
+        (should-contain :limit body)
+        (should-contain :offset body)))
+
+    (it "total reflects all matches before slicing"
+      (should= 2 (-> (filter-indicators/handler
+                       (req @!conn :body-params {:tlp "white"} :query-params {"limit" "1"}))
+                     :body :total)))
+
+    (it "limit=1 returns only one result"
+      (should= 1 (-> (filter-indicators/handler
+                       (req @!conn :body-params {:tlp "white"} :query-params {"limit" "1"}))
+                     :body :results count))))
+
   (describe "cache — end-to-end consistency"
     (it "repeated search returns identical results"
       (let [search! #(-> (filter-indicators/handler (req @!conn :body-params {:tlp "white"}))

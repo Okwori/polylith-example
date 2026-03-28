@@ -51,7 +51,7 @@
       (with-redefs [store/find-all-documents (constantly [])
                     store/transform-keys (constantly [])]
         (let [response (indicators/handler {:db :mock-db :access-policy nil :query-params {}})]
-          (should= {:results []} (:body response)))))
+          (should= [] (-> response :body :results)))))
 
     (it "calls find-all-documents when type param is absent"
       (let [find-all-called? (atom false)]
@@ -100,4 +100,4 @@
       (with-redefs [store/find-document-by-type (constantly [])
                     store/transform-keys (constantly [])]
         (let [response (indicators/handler {:db :mock-db :access-policy nil :query-params {"type" "URL"}})]
-          (should= {:results []} (:body response)))))))
+          (should= [] (-> response :body :results)))))))
