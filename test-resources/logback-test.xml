@@ -1,0 +1,6 @@
+<configuration>
+  <!-- Suppress all logging during tests — only speclj dots go to stdout -->
+  <root level="ERROR">
+    <appender class="ch.qos.logback.core.helpers.NOPAppender"/>
+  </root>
+</configuration>

@@ -27,15 +27,18 @@
                                  "bases/service/spec"
                                  "components/server/spec"
                                  "components/persistence/spec"]
-                   :extra-paths ["bases/service/spec"
+                   :extra-paths ["test-resources"
+                                 "bases/service/spec"
                                  "components/server/spec"
                                  "components/persistence/spec"]
                    :extra-deps  {speclj/speclj {:mvn/version "3.12.2"}
                                  etaoin/etaoin {:mvn/version "1.1.43"}}}
 
-            :poly {:main-opts  ["-m" "polylith.clj.core.poly-cli.core"]
-                   :jvm-opts   ["--enable-native-access=ALL-UNNAMED"]
-                   :extra-deps {polylith/clj-poly {:mvn/version "0.3.32"}}}
+            :poly {:main-opts   ["-m" "polylith.clj.core.poly-cli.core"]
+                   :jvm-opts    ["--enable-native-access=ALL-UNNAMED"
+                                 "-Dslf4j.internal.verbosity=WARN"]
+                   :extra-paths ["development/src"]
+                   :extra-deps  {polylith/clj-poly {:mvn/version "0.3.32"}}}
 
             :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.16.3"}}
                      :main-opts  ["-m" "cljfmt.main"]}

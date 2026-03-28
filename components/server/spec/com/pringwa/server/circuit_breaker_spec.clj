@@ -3,7 +3,7 @@
             [com.pringwa.server.circuit-breaker :as cb]))
 
 (defn- ok-handler    [_] {:status 200 :body "ok"})
-(defn- error-handler [_] {:status 500 :body {:error "boom"}})
+(defn- boom-handler [_] {:status 500 :body {:error "boom"}})
 
 (defn- make-breaker
   ([] (make-breaker {}))
@@ -53,17 +53,17 @@
 
   (describe "opening the circuit"
     (it "opens after reaching the failure threshold"
-      (let [handler (make-breaker-with error-handler {:failure-threshold 3})]
+      (let [handler (make-breaker-with boom-handler {:failure-threshold 3})]
         (dotimes [_ 3] (handler {}))
         (should= 503 (:status (handler {})))))
 
     (it "returns :error in body when open"
-      (let [handler (make-breaker-with error-handler {:failure-threshold 2})]
+      (let [handler (make-breaker-with boom-handler {:failure-threshold 2})]
         (dotimes [_ 2] (handler {}))
         (should-contain :error (:body (handler {})))))
 
     (it "includes Retry-After header when open"
-      (let [handler (make-breaker-with error-handler
+      (let [handler (make-breaker-with boom-handler
                       {:failure-threshold   2
                        :recovery-timeout-ms 30000})]
         (dotimes [_ 2] (handler {}))

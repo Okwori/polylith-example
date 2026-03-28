@@ -5,4 +5,5 @@
            metosin/reitit-middleware  {:mvn/version "0.10.1"}
            metosin/reitit-swagger     {:mvn/version "0.10.1"}
            metosin/reitit-swagger-ui  {:mvn/version "0.10.1"}}
- :aliases {:test {:extra-paths ["test"]}}}
+ :aliases {:test {:extra-paths ["spec"]
+                 :extra-deps  {speclj/speclj {:mvn/version "3.12.2"}}}}}

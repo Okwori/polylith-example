@@ -2,7 +2,7 @@
 # Service API - Makefile
 # ==============================================================================
 
-.PHONY: help install clean build run test spec-test install-hooks docker-build \
+.PHONY: help install clean build run test install-hooks docker-build \
         docker-run docker-stop format-check api-health api-indicators \
         api-indicators-type api-indicator api-search export-openapi info
 
@@ -48,12 +48,7 @@ build: clean ## Build uberjar
 # TESTING
 # ==============================================================================
 
-test: ## Run clojure.test unit tests
-	@echo "🧪 Running unit tests..."
-	clojure -M:poly test
-
-spec-test: ## Run Speclj specs
-	@echo "🧪 Running specs..."
+test: ## Run Speclj specs
 	clojure -M:dev:test
 
 # ==============================================================================

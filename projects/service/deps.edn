@@ -10,10 +10,15 @@
         poly/server      {:local/root "../../components/server"}
         poly/service     {:local/root "../../bases/service"}
 
-        com.datomic/ion  {:mvn/version "1.0.71"}}
+        com.datomic/ion  {:mvn/version "1.0.71"}
+
+        ;; Override Datomic Local's transitive Caffeine 2.x to silence
+        ;; sun.misc.Unsafe deprecation warnings on Java 21+
+        com.github.ben-manes.caffeine/caffeine {:mvn/version "3.2.3"}}
 
  :aliases {:build   {:deps       {io.github.clojure/tools.build {:mvn/version "0.10.12"}
                                   org.clojure/tools.deps        {:mvn/version "0.28.1578"}}
                      :paths      ["build/resources"]
                      :ns-default build}
+           :test    {:extra-paths ["../../test-resources"]}
            :uberjar {:main com.pringwa.service.main}}}

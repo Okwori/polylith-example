@@ -11,5 +11,6 @@
                         :shadow-cljs-ver "^3.2.1"}
  :validations          {:inconsistent-lib-versions {:type    :warning
                                                     :exclude []}}
+ :test                 {:create-test-runner [dev.speclj-runner/create]}
  :projects             {"development"  {:alias "dev"}
                         "service"      {:alias "ws"}}}
