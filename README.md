@@ -164,7 +164,7 @@ clj-kondo --lint bases components   # Linting (requires clj-kondo installed)
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details on the deployment pipeline, including Datomic Ion integration for staging and production environments.
 
 ## License
-TODO: Add license information.
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 ##### Created by: Simon Okwori
