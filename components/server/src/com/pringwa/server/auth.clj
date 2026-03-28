@@ -43,6 +43,14 @@
   {:sub    "dev-user"
    :scopes #{"indicators:admin" "indicators:read" "indicators:search"}})
 
+(defn- scope->str
+  "Converts a keyword scope to the string form used in identity claims.
+  :indicators/read → \"indicators:read\""
+  [kw]
+  (if (namespace kw)
+    (str (namespace kw) ":" (name kw))
+    (name kw)))
+
 ;; ---------------------------------------------------------------------------
 ;; Authentication
 ;; ---------------------------------------------------------------------------
@@ -104,7 +112,7 @@
         {:status 401
          :body   {:error "Authentication required"}}
 
-        (every? (:scopes identity) (map name required-scopes))
+        (every? (:scopes identity) (map scope->str required-scopes))
         (handler request)
 
         :else
