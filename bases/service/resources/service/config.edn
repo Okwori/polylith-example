@@ -26,4 +26,11 @@
  ;;                 For Ion deployments leave nil; API Gateway validates tokens.
  :auth #profile {:dev     {:dev? true}
                  :staging {}
-                 :prod    {}}}
+                 :prod    {}}
+
+ :cors #profile {:dev     {:allowed-origins ["*"]}
+                 :staging {:allowed-origins [#or [#env CORS_ORIGIN "https://staging.example.com"]]}
+                 :prod    {:allowed-origins [#or [#env CORS_ORIGIN "https://app.example.com"]]}}
+
+ :rate-limit #profile {:dev     {:requests-per-second 1000}
+                       :default {:requests-per-second 100}}}

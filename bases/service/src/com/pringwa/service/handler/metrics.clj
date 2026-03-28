@@ -1,4 +1,5 @@
 (ns com.pringwa.service.handler.metrics
+  (:require [com.pringwa.server.interface :as server])
   (:import (java.lang.management ManagementFactory)))
 
 (defn- heap-stats []
@@ -14,6 +15,7 @@
 
 (defn handler [_]
   {:status 200
-   :body   {:jvm    {:heap    (heap-stats)
+   :body   {:app    (server/metrics-snapshot)
+            :jvm    {:heap    (heap-stats)
                      :threads (thread-stats)}
             :uptime {:ms (.getUptime (ManagementFactory/getRuntimeMXBean))}}})

@@ -29,11 +29,20 @@
 ;; wrap-authentication is still included (with no validator-fn) so the
 ;; middleware chain is identical to the standalone deployment — identity
 ;; is extracted from the request context forwarded by API Gateway.
+;;
+;; wrap-cors opts are empty for Ion: CORS is handled at the API Gateway level.
+;; wrap-rate-limit is also at API Gateway level, but we include a conservative
+;; in-app limit as defence-in-depth.
 (def ^:private app
-  (-> (routes/router)
-      (server/wrap-connection @!conn)
-      (server/wrap-authentication {})
-      server/wrap-exception))
+  (let [cfg (config)]
+    (-> (routes/router)
+        (server/wrap-connection @!conn)
+        (server/wrap-authentication {})
+        server/wrap-exception
+        server/wrap-cache-control
+        server/wrap-metrics
+        (server/wrap-cors (get cfg :cors {}))
+        (server/wrap-rate-limit (get cfg :rate-limit {})))))
 
 (defn handler
   "Ion web handler — registered as the entry point in ion-config.edn.
