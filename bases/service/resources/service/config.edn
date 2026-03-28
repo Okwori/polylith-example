@@ -17,8 +17,9 @@
                                 :endpoint    #env DATOMIC_ENDPOINT}
                       :db-name #or [#env DATOMIC_DB_NAME "indicators-prod"]}}
 
- :server {:host #or [#env HOST "localhost"]
-          :port #long #or [#env PORT 8080]}
+ :server {:host             #or [#env HOST "localhost"]
+          :port             #long #or [#env PORT 8080]
+          :stop-timeout-ms  #long #or [#env STOP_TIMEOUT_MS 10000]}
 
  ;; Authentication options passed to wrap-authentication.
  ;; :dev? true  — skip JWT validation, inject a dev identity (local only)

@@ -1,11 +1,14 @@
 (ns com.pringwa.server.interface
   (:require [com.pringwa.server.auth :as auth]
             [com.pringwa.server.circuit-breaker :as cb]
+            [com.pringwa.server.compression :as compression]
             [com.pringwa.server.core :as server]
             [com.pringwa.server.cors :as cors]
+            [com.pringwa.server.correlation :as correlation]
             [com.pringwa.server.metrics-state :as metrics]
             [com.pringwa.server.middleware :as middleware]
             [com.pringwa.server.rate-limit :as rate-limit]
+            [com.pringwa.server.request-log :as request-log]
             [com.pringwa.server.timeout :as timeout]))
 
 (defn create [router config]
@@ -40,3 +43,12 @@
 
 (defn wrap-circuit-breaker [handler opts]
   (cb/wrap-circuit-breaker handler opts))
+
+(defn wrap-gzip [handler]
+  (compression/wrap-gzip handler))
+
+(defn wrap-correlation-id [handler]
+  (correlation/wrap-correlation-id handler))
+
+(defn wrap-request-log [handler]
+  (request-log/wrap-request-log handler))

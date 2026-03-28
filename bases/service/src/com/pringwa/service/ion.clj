@@ -43,7 +43,10 @@
         server/wrap-exception
         server/wrap-cache-control
         server/wrap-metrics
+        server/wrap-request-log
+        server/wrap-gzip
         (server/wrap-cors (get cfg :cors {}))
+        server/wrap-correlation-id
         (server/wrap-rate-limit (get cfg :rate-limit {})))))
 
 (defn handler

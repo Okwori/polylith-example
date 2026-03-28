@@ -7,8 +7,19 @@
         <version>[ignore]</version>
         <levelValue>[ignore]</levelValue>
       </fieldNames>
+      <!-- Include all MDC fields (requestId, http.*) as top-level JSON keys -->
+      <includeMdcKeyName>requestId</includeMdcKeyName>
+      <includeMdcKeyName>http.method</includeMdcKeyName>
+      <includeMdcKeyName>http.uri</includeMdcKeyName>
+      <includeMdcKeyName>http.status</includeMdcKeyName>
+      <includeMdcKeyName>http.duration_ms</includeMdcKeyName>
     </encoder>
   </appender>
+
+  <!-- Suppress noisy startup/shutdown chatter -->
+  <logger name="org.eclipse.jetty"           level="WARN"/>
+  <logger name="com.datomic"                  level="WARN"/>
+  <logger name="datomic"                      level="WARN"/>
 
   <root level="INFO">
     <appender-ref ref="STDOUT"/>
