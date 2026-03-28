@@ -1,10 +1,12 @@
 (ns com.pringwa.server.core
   (:require [clojure.tools.logging :as log]
             [com.pringwa.server.auth :refer [wrap-authentication]]
+            [com.pringwa.server.circuit-breaker :refer [wrap-circuit-breaker]]
             [com.pringwa.server.cors :refer [wrap-cors]]
             [com.pringwa.server.metrics-state :refer [wrap-metrics]]
             [com.pringwa.server.middleware :refer [wrap-cache-control wrap-connection wrap-exception]]
             [com.pringwa.server.rate-limit :refer [wrap-rate-limit]]
+            [com.pringwa.server.timeout :refer [wrap-timeout]]
             [com.stuartsierra.component :as component]
             [ring.adapter.jetty :refer [run-jetty]]))
 
@@ -18,11 +20,15 @@
             auth-opts   (get config :auth {})
             cors-opts   (get config :cors {})
             rate-opts   (get config :rate-limit {})
+            timeout-opts (get config :timeout {})
+            cb-opts     (get config :circuit-breaker {})
             conn        (:conn database)
             base-handler (handler-fn)
             handler     (-> base-handler
                             (wrap-connection conn)
                             (wrap-authentication auth-opts)
+                            (wrap-timeout timeout-opts)
+                            (wrap-circuit-breaker cb-opts)
                             wrap-exception
                             wrap-cache-control
                             wrap-metrics

@@ -38,6 +38,8 @@
     (-> (routes/router)
         (server/wrap-connection @!conn)
         (server/wrap-authentication {})
+        (server/wrap-timeout (get cfg :timeout {}))
+        (server/wrap-circuit-breaker (get cfg :circuit-breaker {}))
         server/wrap-exception
         server/wrap-cache-control
         server/wrap-metrics

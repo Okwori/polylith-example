@@ -1,10 +1,12 @@
 (ns com.pringwa.server.interface
   (:require [com.pringwa.server.auth :as auth]
+            [com.pringwa.server.circuit-breaker :as cb]
             [com.pringwa.server.core :as server]
             [com.pringwa.server.cors :as cors]
             [com.pringwa.server.metrics-state :as metrics]
             [com.pringwa.server.middleware :as middleware]
-            [com.pringwa.server.rate-limit :as rate-limit]))
+            [com.pringwa.server.rate-limit :as rate-limit]
+            [com.pringwa.server.timeout :as timeout]))
 
 (defn create [router config]
   (server/create router config))
@@ -32,3 +34,9 @@
 
 (defn metrics-snapshot []
   (metrics/snapshot))
+
+(defn wrap-timeout [handler opts]
+  (timeout/wrap-timeout handler opts))
+
+(defn wrap-circuit-breaker [handler opts]
+  (cb/wrap-circuit-breaker handler opts))

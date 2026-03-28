@@ -33,4 +33,10 @@
                  :prod    {:allowed-origins [#or [#env CORS_ORIGIN "https://app.example.com"]]}}
 
  :rate-limit #profile {:dev     {:requests-per-second 1000}
-                       :default {:requests-per-second 100}}}
+                       :default {:requests-per-second 100}}
+
+ :timeout {:timeout-ms #long #or [#env REQUEST_TIMEOUT_MS 30000]}
+
+ :circuit-breaker {:failure-threshold   #long #or [#env CB_FAILURE_THRESHOLD 5]
+                   :recovery-timeout-ms #long #or [#env CB_RECOVERY_TIMEOUT_MS 30000]
+                   :success-threshold   #long #or [#env CB_SUCCESS_THRESHOLD 2]}}
