@@ -63,11 +63,10 @@ Environment profiles are controlled by `APP_PROFILE`:
 ## Testing
 
 ```shell
-make test         # clojure.test (via poly test runner)
-make spec-test    # Speclj BDD specs (clojure -M:dev:test)
+make test    # Speclj BDD specs
 ```
 
-Both are run by the pre-commit hook and by the CI workflow on every PR.
+Run by the pre-commit hook and by the CI workflow on every PR.
 
 ## Code style
 

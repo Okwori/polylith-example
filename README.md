@@ -128,12 +128,11 @@ The `POST /v1/indicators/search` endpoint accepts a JSON body with the following
 | `description` | string | `{"description": "APT"}` |
 
 ## Testing & Quality
-The project uses both `clojure.test` and `Speclj` for testing.
+The project uses [Speclj](https://github.com/slagyr/speclj) for testing.
 
-### Run All Tests
+### Run Tests
 ```shell
-make test        # clojure.test unit tests (via poly test runner)
-make spec-test   # Speclj BDD specs
+make test
 ```
 
 ### Code Quality
@@ -152,8 +151,7 @@ clj-kondo --lint bases components   # Linting (requires clj-kondo installed)
 | `make run-jar` | Build and run the JAR file |
 | `make build` | Build uberjar |
 | `make clean` | Clean build artifacts |
-| `make test` | Run clojure.test unit tests |
-| `make spec-test` | Run Speclj specs |
+| `make test` | Run Speclj specs |
 | `make install-hooks` | Install git pre-commit hooks |
 | `make format-check` | Check code formatting |
 | `make export-openapi` | Export OpenAPI spec to `openapi.json` |
