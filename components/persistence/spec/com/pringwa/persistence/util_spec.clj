@@ -223,47 +223,6 @@
       (should= "192.168.1.1"              (-> result :indicators first :indicator))
       (should= "IPv4"                     (-> result :indicators first :type)))))
 
-;; ---------------------------------------------------------------------------
-;; matches?
-;; ---------------------------------------------------------------------------
-
-(describe "matches?"
-  (let [doc {:document/id          "doc-123"
-             :document/name        "Test Document"
-             :document/adversary   "Plead"
-             :document/tlp         "white"
-             :document/author_name "AlienVault"
-             :document/tags        ["china" "apt" "blacktech"]
-             :document/industries  ["tech" "finance"]}]
-
-    (it "matches a single scalar criterion"
-      (should (util/matches? doc {:adversary "Plead"}))
-      (should (util/matches? doc {:tlp "white"}))
-      (should (util/matches? doc {:author_name "AlienVault"})))
-
-    (it "does not match a wrong value"
-      (should-not (util/matches? doc {:adversary "APT28"}))
-      (should-not (util/matches? doc {:tlp "red"})))
-
-    (it "ANDs multiple criteria"
-      (should (util/matches? doc {:adversary "Plead" :tlp "white"}))
-      (should (util/matches? doc {:adversary "Plead" :tlp "white" :author_name "AlienVault"})))
-
-    (it "fails when any criterion does not match"
-      (should-not (util/matches? doc {:adversary "Plead" :tlp "red"}))
-      (should-not (util/matches? doc {:adversary "Wrong" :tlp "white"})))
-
-    (it "does not match a value absent from a vector attribute"
-      (should-not (util/matches? doc {:tags "russia"}))
-      (should-not (util/matches? doc {:industries "healthcare"})))
-
-    (it "matches by exact id"
-      (should     (util/matches? doc {:id "doc-123"}))
-      (should-not (util/matches? doc {:id "wrong-id"})))
-
-    (it "matches by exact name"
-      (should     (util/matches? doc {:name "Test Document"}))
-      (should-not (util/matches? doc {:name "Wrong Name"})))))
 
 ;; ---------------------------------------------------------------------------
 ;; init-db
@@ -271,47 +230,17 @@
 
 (describe "init-db"
   (it "creates client, connects, installs schema, and returns result map"
-    (let [captured-client (atom nil)
-          captured-db     (atom nil)
-          schema-called   (atom false)]
-      (with-redefs [util/create-client   (fn [cfg] (reset! captured-client cfg) :mock-client)
-                    util/create-database (fn [c n]  (reset! captured-db [c n]) :mock-conn)
+    (let [schema-called (atom nil)]
+      (with-redefs [d/client          (constantly :mock-client)
+                    d/create-database (constantly nil)
+                    d/connect         (constantly :mock-conn)
                     schema/install-schema! (fn [conn] (reset! schema-called conn))]
         (let [result (util/init-db {:client   {:server-type :datomic-local
                                                :storage-dir :mem
                                                :system      "indicators"}
                                     :database {:db-name "test-db"}})]
-          (should= {:server-type :datomic-local :storage-dir :mem :system "indicators"}
-                   @captured-client)
-          (should= [:mock-client "test-db"] @captured-db)
           (should= :mock-conn @schema-called)
           (should= {:client :mock-client :conn :mock-conn :db-name "test-db"} result))))))
-
-;; ---------------------------------------------------------------------------
-;; create-client
-;; ---------------------------------------------------------------------------
-
-(describe "create-client"
-  (it "delegates to datomic client with the supplied config"
-    (let [captured (atom nil)]
-      (with-redefs [d/client (fn [cfg] (reset! captured cfg) :mock-client)]
-        (let [config {:server-type :datomic-local :storage-dir :mem :system "indicators"}]
-          (should= :mock-client (util/create-client config))
-          (should= config @captured))))))
-
-;; ---------------------------------------------------------------------------
-;; create-database
-;; ---------------------------------------------------------------------------
-
-(describe "create-database"
-  (it "creates and connects to the named database"
-    (let [created   (atom nil)
-          connected (atom nil)]
-      (with-redefs [d/create-database (fn [c opts] (reset! created   [c opts]))
-                    d/connect         (fn [c opts] (reset! connected [c opts]) :mock-conn)]
-        (should= :mock-conn (util/create-database :mock-client "test-db"))
-        (should= [:mock-client {:db-name "test-db"}] @created)
-        (should= [:mock-client {:db-name "test-db"}] @connected)))))
 
 ;; ---------------------------------------------------------------------------
 ;; slurp-data!

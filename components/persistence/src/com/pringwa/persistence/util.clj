@@ -51,17 +51,11 @@
             (d/transact conn {:tx-data tx-data})))))
     (log/infof "Resource not found: %s" filename)))
 
-(defn create-client [client-map]
-  (d/client client-map))
-
-(defn create-database [client db-name]
-  (d/create-database client {:db-name db-name})
-  (d/connect client {:db-name db-name}))
-
-(defn init-db [{:keys [client database]} ]
+(defn init-db [{:keys [client database]}]
   (let [{:keys [db-name]} database
-        db-client (create-client client)
-        conn (create-database db-client db-name)]
+        db-client (d/client client)
+        conn      (do (d/create-database db-client {:db-name db-name})
+                      (d/connect db-client {:db-name db-name}))]
     (schema/install-schema! conn)
     {:client db-client :conn conn :db-name db-name}))
 
@@ -79,15 +73,3 @@
 
     :else m))
 
-(defn matches? [document criteria]
-  (every? (fn [[k v]]
-            (let [db-key   (keyword "document" (name k))
-                  db-value (get document db-key)]
-              (cond
-                (vector? db-value)
-                (if (vector? v)
-                  (some (set db-value) v)
-                  (contains? (set db-value) v))
-                :else
-                (= db-value v))))
-          criteria))

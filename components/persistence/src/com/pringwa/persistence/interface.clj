@@ -8,9 +8,6 @@
   variants from this for attribute-level access policies."
   model/document-pattern)
 
-(defn matches? [document criteria]
-  (util/matches? document criteria))
-
 (defn transform-keys [m]
   (util/transform-keys m))
 
