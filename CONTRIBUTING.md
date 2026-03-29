@@ -71,8 +71,7 @@ Run by the pre-commit hook and by the CI workflow on every PR.
 ## Code style
 
 ```shell
-make format-check   # check only
-clojure -M:cljfmt fix  # auto-fix
+make format-check
 ```
 
 Formatting is enforced in CI and in the pre-commit hook.

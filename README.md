@@ -25,7 +25,6 @@ This project is an example of a microservice designed with a focus on modularity
 - **Polylith Architecture**: To manage complexity through a modular codebase.
 - **Datomic DB Local**: For high-performance, immutable data storage.
 - **Component**: For lifecycle management.
-- **Aero**: For environment-aware configuration.
 
 ## Prerequisites
 ### Tools
@@ -48,7 +47,7 @@ The repository follows the Polylith structure:
 ## First-time Setup
 
 ```shell
-# Install git hooks (runs lint + tests before every commit)
+# Install git hooks (runs format-check + tests before every commit)
 make install-hooks
 ```
 
@@ -137,9 +136,7 @@ make test
 
 ### Code Quality
 ```shell
-make format-check              # Check code formatting
-clojure -M:cljfmt fix          # Auto-fix formatting
-clj-kondo --lint bases components   # Linting (requires clj-kondo installed)
+make format-check    # Check code formatting
 ```
 
 ## Available Commands
