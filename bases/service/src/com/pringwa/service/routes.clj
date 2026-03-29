@@ -14,9 +14,9 @@
             [reitit.swagger :as swagger]
             [reitit.swagger-ui :as swagger-ui]))
 
-(def ^:private pagination-query-params
-  {:limit  {:type "integer" :minimum 1 :maximum 100 :default 20}
-   :offset {:type "integer" :minimum 0 :default 0}})
+(def ^:private pagination-swagger-params
+  [{:name "limit"  :in "query" :type "integer" :minimum 1 :maximum 100 :default 20}
+   {:name "offset" :in "query" :type "integer" :minimum 0 :default 0}])
 
 (def ^:private error-response
   {:description "Error"
@@ -65,10 +65,10 @@
         ["" {:get {:handler     indicators/handler
                    :name        ::indicators
                    :auth/scopes #{:indicators/read}
-                   :parameters  {:query (merge {:type string?}
-                                               pagination-query-params)}
                    :swagger     {:summary     "List indicator documents"
                                  :description "Returns a paginated list of all indicator documents visible to the caller."
+                                 :parameters  (conj pagination-swagger-params
+                                                     {:name "type" :in "query" :type "string" :required false})
                                  :responses   {200 paginated-response
                                                401 error-response
                                                403 error-response}}}}]
