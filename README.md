@@ -188,6 +188,7 @@ MCP_TRANSPORT=both clojure -M:dev -m com.pringwa.mcp-server.main
 | `MCP_PORT` | Port for SSE transport | `3001` |
 | `MCP_SERVICE_URL` | Base URL of the indicators service | `http://localhost:8080` |
 | `MCP_SERVICE_TOKEN` | Bearer token for service auth (optional) | — |
+| `MCP_EXPORT_BUCKET` | S3 bucket for dataset export (falls back to disk if unset) | — |
 
 ### Tools
 

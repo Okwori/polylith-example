@@ -1,13 +1,18 @@
 (ns com.pringwa.mcp-server.export
   (:require [cheshire.core :as json]
             [clj-http.client :as http]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [clojure.string :as str]
+            [cognitect.aws.client.api :as aws]))
 
 (def ^:private service-url
   (or (System/getenv "MCP_SERVICE_URL") "http://localhost:8080"))
 
 (def ^:private service-token
   (System/getenv "MCP_SERVICE_TOKEN"))
+
+(def ^:private export-bucket
+  (System/getenv "MCP_EXPORT_BUCKET"))
 
 (defn- auth-headers []
   (when service-token {"Authorization" (str "Bearer " service-token)}))
@@ -52,16 +57,38 @@
      :input       ""
      :output      (completion indicator)}))
 
-(defn- write-jsonl! [path lines]
+(defn- lines->bytes [lines]
+  (.getBytes (str (str/join "\n" lines) "\n") "UTF-8"))
+
+(defn- write-local! [path lines]
   (io/make-parents path)
   (with-open [w (io/writer path)]
     (doseq [line lines]
       (.write w line)
       (.newLine w))))
 
+(defn- upload-s3! [bucket key lines]
+  (let [client  (aws/client {:api :s3})
+        payload (lines->bytes lines)
+        result  (aws/invoke client
+                            {:op      :PutObject
+                             :request {:Bucket      bucket
+                                       :Key         key
+                                       :Body        (java.io.ByteArrayInputStream. payload)
+                                       :ContentType "application/x-ndjson"}})]
+    (when (:cognitect.anomalies/category result)
+      (throw (ex-info "S3 upload failed" result)))))
+
+(defn- persist! [output-dir filename lines]
+  (if export-bucket
+    (upload-s3! export-bucket (str output-dir "/" filename) lines)
+    (write-local! (str output-dir "/" filename) lines)))
+
 (defn export! [output-dir]
   (let [indicators (fetch-all)]
-    (write-jsonl! (str output-dir "/anthropic.jsonl") (map anthropic-line indicators))
-    (write-jsonl! (str output-dir "/openai.jsonl")    (map openai-line    indicators))
-    (write-jsonl! (str output-dir "/llama.jsonl")     (map llama-line     indicators))
-    {:count (count indicators) :output-dir output-dir}))
+    (persist! output-dir "anthropic.jsonl" (map anthropic-line indicators))
+    (persist! output-dir "openai.jsonl"    (map openai-line    indicators))
+    (persist! output-dir "llama.jsonl"     (map llama-line     indicators))
+    {:count      (count indicators)
+     :output-dir output-dir
+     :bucket     (or export-bucket :local)}))
