@@ -59,7 +59,7 @@
       (.write w line)
       (.newLine w))))
 
-(defn run! [output-dir]
+(defn export! [output-dir]
   (let [indicators (fetch-all)]
     (write-jsonl! (str output-dir "/anthropic.jsonl") (map anthropic-line indicators))
     (write-jsonl! (str output-dir "/openai.jsonl")    (map openai-line    indicators))

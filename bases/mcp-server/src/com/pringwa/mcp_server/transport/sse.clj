@@ -58,10 +58,10 @@
     {:status 202 :body ""}))
 
 (defn- router [req]
-  (case [(:request-method req) (:uri req)]
-    [:get  "/sse"]     (sse-handler req)
-    [:post "/message"] (message-handler req)
-    {:status 404 :body "Not found"}))
+  (cond
+    (and (= :get  (:request-method req)) (= "/sse"     (:uri req))) (sse-handler req)
+    (and (= :post (:request-method req)) (= "/message" (:uri req))) (message-handler req)
+    :else {:status 404 :body "Not found"}))
 
 (defn start! [port]
   (jetty/run-jetty (params/wrap-params router) {:port port :join? false}))

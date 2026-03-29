@@ -14,7 +14,7 @@
 
 (defn- get! [path params]
   (-> (http/get (str service-url path)
-                {:query-params     (remove (comp nil? val) params)
+                {:query-params     (into {} (remove (comp nil? val) params))
                  :headers          (auth-headers)
                  :as               :json
                  :throw-exceptions false})
@@ -71,7 +71,7 @@
   (text (post! "/v1/indicators/search" (or criteria {}))))
 
 (defmethod dispatch "export-dataset" [_ {:strs [output-dir]}]
-  (text (export/run! (or output-dir "export"))))
+  (text (export/export! (or output-dir "export"))))
 
 (defmethod dispatch :default [name _]
   {:isError true

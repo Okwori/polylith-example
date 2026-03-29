@@ -24,10 +24,11 @@ polylith-example/
 │   ├── persistence/     # Datomic layer (schema, queries, data loading)
 │   └── server/          # Jetty HTTP server + middleware
 ├── bases/
-│   └── service/         # REST API entry point (routes, handlers)
-│       ├── src/         # Production source
-│       ├── test/        # unit tests
-│       └── spec/        # Speclj BDD specs
+│   ├── service/         # REST API entry point (routes, handlers)
+│   │   ├── src/         # Production source
+│   │   ├── test/        # unit tests
+│   │   └── spec/        # Speclj BDD specs
+│   └── mcp-server/      # MCP server (AI tool access + fine-tuning export)
 ├── projects/
 │   └── service/         # Deployable artefact (uberjar deps)
 └── development/         # REPL utilities
@@ -98,7 +99,7 @@ feature/* → PR → CI (test + lint)
                    main
                       ↓ auto
                   staging (Datomic Ion)
-                      ↓ manual trigger
+                      ↓ auto (queues, awaits approval)
                   prod (Datomic Ion)
 ```
 
@@ -150,14 +151,16 @@ The `APP_PROFILE=staging` environment variable is set by the workflow, which cau
 
 ### Production deploy
 
-Production deploys are manual and gated by GitHub environment approval.
+Production deploys trigger automatically once staging succeeds, but are gated by a required reviewer in the `production` GitHub environment.
 
-1. Go to **Actions → Deploy — Production → Run workflow**
-2. Leave the `sha` input blank to deploy the latest `main`, or enter a specific Git SHA to deploy a pinned commit
-3. Approve the deployment when prompted (required reviewer gate)
+1. Merge to `main` — staging deploys automatically
+2. Once staging passes, the prod workflow queues and pauses — GitHub notifies the required reviewer
+3. Approve the deployment in **Actions → Deploy — Production → Review deployments**
 4. Monitor the **Wait for deploy** step — it polls `deploy-status` until the Ion compute group confirms the new revision is live
 
-The optional `sha` input is also the rollback mechanism — to revert, trigger the workflow with the SHA of the last known good commit.
+The prod workflow always deploys the exact Git SHA that was just verified on staging.
+
+**Rollback:** re-run the prod workflow on any previous staging run that deployed the SHA you want to revert to.
 
 ### Running a deploy manually from the CLI
 
