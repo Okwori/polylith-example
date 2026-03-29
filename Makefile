@@ -59,7 +59,7 @@ test: ## Run Speclj specs
 install-hooks: ## Install git hooks (run once after cloning)
 	@echo "🔧 Installing git hooks..."
 	git config core.hooksPath .githooks
-	@echo "✅ Hooks installed — pre-commit will run format-check + tests"
+	@echo "✅ Hooks installed — pre-commit will run format-check"
 
 # ==============================================================================
 # DOCKER

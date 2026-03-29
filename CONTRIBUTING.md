@@ -10,7 +10,7 @@
 ## First-time setup
 
 ```shell
-# Install git hooks (runs format-check + tests before every commit)
+# Install git hooks (runs format-check before every commit)
 make install-hooks
 ```
 
