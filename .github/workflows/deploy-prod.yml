@@ -1,17 +1,15 @@
 name: Deploy — Production
 
 on:
-  workflow_dispatch:
-    inputs:
-      sha:
-        description: "Git SHA to deploy (defaults to latest main)"
-        required: false
-        type: string
+  workflow_run:
+    workflows: ["Deploy — Staging"]
+    types: [completed]
 
 jobs:
   deploy:
     name: Push & deploy to production
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment: production   # requires manual approval in GitHub env settings
 
     env:
@@ -21,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
         with:
-          ref: ${{ inputs.sha || github.ref }}
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up Java
         uses: actions/setup-java@v5.2.0
@@ -52,16 +50,16 @@ jobs:
           aws-region:            ${{ secrets.AWS_REGION }}
 
       - name: Push to Datomic Cloud
-        run: clojure -A:dev:ion push --uname ${{ inputs.sha || github.sha }}
+        run: clojure -A:dev:ion push --uname ${{ github.event.workflow_run.head_sha }}
 
       - name: Deploy to production
         run: |
           clojure -A:dev:ion deploy \
             --system ${{ vars.PROD_SYSTEM }} \
-            --uname  ${{ inputs.sha || github.sha }}
+            --uname  ${{ github.event.workflow_run.head_sha }}
 
       - name: Wait for deploy
         run: |
           clojure -A:dev:ion deploy-status \
             --system ${{ vars.PROD_SYSTEM }} \
-            --uname  ${{ inputs.sha || github.sha }}
+            --uname  ${{ github.event.workflow_run.head_sha }}
