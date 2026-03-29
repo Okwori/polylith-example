@@ -35,7 +35,7 @@
    (attr :document/more_indicators :boolean :one "more indicators ...")
    (attr :document/revision :long :one "revision ...")
    (attr :document/adversary :string :one "adversary ..." {:db/fulltext true})
-   (attr :document/id :string :one "id ...")
+   (attr :document/id :string :one "id ..." {:db/unique :db.unique/identity})
    (attr :document/name :string :one "name ..." {:db/fulltext true})
    (component :document/indicators :many "Indicators")])
 

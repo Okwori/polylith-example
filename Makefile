@@ -48,8 +48,8 @@ build: clean ## Build uberjar
 # TESTING
 # ==============================================================================
 
-test: ## Run clojure.test unit tests
-	@echo "🧪 Running unit tests..."
+test: ## Run Speclj specs
+	@echo "🧪 Running complete test suites..."
 	clojure -M:dev:test
 
 # ==============================================================================
