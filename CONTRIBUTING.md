@@ -31,6 +31,7 @@ polylith-example/
 │   └── mcp-server/      # MCP server (AI tool access + fine-tuning export)
 ├── projects/
 │   └── service/         # Deployable artefact (uberjar deps)
+├── infra/               # Terraform — WAF, CloudWatch alarms, SNS, API GW stage
 └── development/         # REPL utilities
 ```
 
@@ -96,6 +97,27 @@ GET  /v1/indicators/:id
 POST /v1/indicators/search
 GET  /api-docs   (Swagger UI)
 ```
+
+## Infrastructure
+
+AWS infrastructure is managed with Terraform in `infra/`. It provisions:
+- **WAF** (WAFv2 REGIONAL) on the API Gateway stage — AWS managed rules + IP rate limiting
+- **CloudWatch Metric Filters** on the mulog log group — extracts 5xx count and request latency
+- **CloudWatch Alarms** — fires to SNS on high error rate or p99 latency breach
+- **SNS topic** — email notifications for alarms
+- **API Gateway stage** — access logging to CloudWatch + throttling settings
+
+```shell
+cd infra
+cp example.tfvars staging.tfvars   # fill in your values
+terraform init \
+  -backend-config="bucket=<tfstate-bucket>" \
+  -backend-config="key=pringwa-service/staging/terraform.tfstate"
+terraform import aws_api_gatewayv2_stage.api <api-id>/$default
+terraform apply -var-file=staging.tfvars
+```
+
+Repeat with `prod.tfvars` for production. State files and `*.tfvars` are gitignored.
 
 ## Branching & deployment
 

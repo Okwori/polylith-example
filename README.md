@@ -43,6 +43,7 @@ The repository follows the Polylith structure:
   - `server`: HTTP server implementation and middleware.
 - `projects/`: Configuration for deployable artifacts (e.g., uberjars).
 - `development/`: REPL and development-only code.
+- `infra/`: Terraform modules for AWS infrastructure (WAF, CloudWatch alarms, SNS).
 - `deps.edn`: Main dependency configuration and aliases.
 - `workspace.edn`: Polylith workspace configuration.
 

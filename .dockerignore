@@ -1,0 +1,13 @@
+.git/
+.github/
+.githooks/
+.cpcache/
+target/
+projects/*/target/
+export/
+infra/
+development/
+.envrc
+*.tfstate
+*.tfstate.backup
+.terraform/
