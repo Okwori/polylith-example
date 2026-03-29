@@ -42,6 +42,3 @@ projects/**/pom.xml
 .calva/output-window/output.calva-repl
 .calva/repl.calva-repl
 
-# MCP server — fine-tuning dataset exports
-export/
-

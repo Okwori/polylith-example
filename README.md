@@ -16,6 +16,7 @@ A simple JSON-based REST Microservice built with Clojure, demonstrating function
   - [Search Criteria](#search-criteria)
 - [Testing & Quality](#testing--quality)
 - [Available Commands](#available-commands)
+- [MCP Server](#mcp-server)
 - [Deployment](#deployment)
 - [License](#license)
 
@@ -36,6 +37,7 @@ This project is an example of a microservice designed with a focus on modularity
 The repository follows the Polylith structure:
 - `bases/`: Contains the external entry points (e.g., REST API).
   - `service`: The main API service base.
+  - `mcp-server`: MCP server for AI tool access and fine-tuning dataset export.
 - `components/`: Modular building blocks used by bases and other components.
   - `persistence`: Data access layer and schema.
   - `server`: HTTP server implementation and middleware.
@@ -156,6 +158,48 @@ make format-check    # Check code formatting
 | `make docker-run` | Run Docker container |
 | `make docker-stop` | Stop Docker container |
 | `make info` | Show project information |
+
+## MCP Server
+
+An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that exposes the indicators API as AI-callable tools, and can export all data as fine-tuning datasets.
+
+### Running
+
+```shell
+# stdio (default — for Claude Desktop and most MCP clients)
+clojure -M:dev -m com.pringwa.mcp-server.main
+
+# HTTP/SSE (for remote or shared use)
+MCP_TRANSPORT=sse MCP_PORT=3001 clojure -M:dev -m com.pringwa.mcp-server.main
+
+# Both transports simultaneously
+MCP_TRANSPORT=both clojure -M:dev -m com.pringwa.mcp-server.main
+```
+
+### Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `MCP_TRANSPORT` | Transport mode: `stdio`, `sse`, or `both` | `stdio` |
+| `MCP_PORT` | Port for SSE transport | `3001` |
+| `MCP_SERVICE_URL` | Base URL of the indicators service | `http://localhost:8080` |
+| `MCP_SERVICE_TOKEN` | Bearer token for service auth (optional) | — |
+
+### Tools
+
+| Tool | Description |
+|---|---|
+| `list-indicators` | List indicators, optionally filtered by type |
+| `get-indicator` | Fetch a single indicator by ID |
+| `search-indicators` | Search by criteria (AND logic) |
+| `export-dataset` | Export all indicators as JSONL to `export/` |
+
+### Dataset Export
+
+The `export-dataset` tool writes three files to `export/` (gitignored):
+- `export/anthropic.jsonl` — chat format for Anthropic fine-tuning
+- `export/openai.jsonl` — chat format for OpenAI fine-tuning
+- `export/llama.jsonl` — Alpaca instruction format for open-source models
 
 ## Deployment
 See [CONTRIBUTING.md](CONTRIBUTING.md) for details on the deployment pipeline, including Datomic Ion integration for staging and production environments.
