@@ -45,3 +45,6 @@ projects/**/pom.xml
 # MCP server — fine-tuning dataset exports
 export/
 
+# Local environment config (machine-specific paths, secrets)
+.envrc
+
