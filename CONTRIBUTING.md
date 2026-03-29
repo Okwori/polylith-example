@@ -26,7 +26,7 @@ polylith-example/
 ├── bases/
 │   └── service/         # REST API entry point (routes, handlers)
 │       ├── src/         # Production source
-│       ├── test/        # clojure.test unit tests
+│       ├── test/        # unit tests
 │       └── spec/        # Speclj BDD specs
 ├── projects/
 │   └── service/         # Deployable artefact (uberjar deps)
