@@ -1,7 +1,7 @@
 {:paths   ["src" "resources"]
  :deps    {ring/ring                  {:mvn/version "1.15.3"}
            metosin/reitit-core        {:mvn/version "0.10.0"}
-           metosin/reitit-ring        {:mvn/version "0.10.0"}
+           metosin/reitit-ring        {:mvn/version "0.10.1"}
            metosin/reitit-middleware  {:mvn/version "0.10.0"}
            metosin/reitit-swagger     {:mvn/version "0.10.0"}
            metosin/reitit-swagger-ui  {:mvn/version "0.10.0"}}
