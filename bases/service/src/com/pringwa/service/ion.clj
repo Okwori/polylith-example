@@ -13,6 +13,9 @@
   (let [profile (keyword (or (System/getenv "APP_PROFILE") "staging"))]
     (aero/read-config (io/resource "service/config.edn") {:profile profile})))
 
+(defonce ^:private _publisher
+  (delay (server/start-publisher! (get (config) :mulog {:type :console}))))
+
 (defonce ^:private !conn
   (delay
     (let [{:keys [system region endpoint]} (ion/get-env)
@@ -34,7 +37,8 @@
 ;; wrap-rate-limit is also at API Gateway level, but we include a conservative
 ;; in-app limit as defence-in-depth.
 (def ^:private app
-  (let [cfg (config)]
+  (let [cfg (config)
+        _   @_publisher]
     (-> (routes/router)
         (server/wrap-connection @!conn)
         (server/wrap-authentication {})

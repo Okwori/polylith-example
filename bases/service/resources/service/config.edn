@@ -40,4 +40,12 @@
 
  :circuit-breaker {:failure-threshold   #long #or [#env CB_FAILURE_THRESHOLD 5]
                    :recovery-timeout-ms #long #or [#env CB_RECOVERY_TIMEOUT_MS 30000]
-                   :success-threshold   #long #or [#env CB_SUCCESS_THRESHOLD 2]}}
+                   :success-threshold   #long #or [#env CB_SUCCESS_THRESHOLD 2]}
+
+ :mulog #profile {:dev     {:type :console :pretty? true}
+                  :staging {:type                      :mulog/cloudwatch
+                            :cloudwatch/log-group-name #or [#env MULOG_LOG_GROUP "/pringwa/service"]
+                            :cloudwatch/region         #or [#env AWS_REGION "us-east-1"]}
+                  :prod    {:type                      :mulog/cloudwatch
+                            :cloudwatch/log-group-name #or [#env MULOG_LOG_GROUP "/pringwa/service"]
+                            :cloudwatch/region         #or [#env AWS_REGION "us-east-1"]}}}

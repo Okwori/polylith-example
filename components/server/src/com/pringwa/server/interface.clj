@@ -7,12 +7,16 @@
             [com.pringwa.server.correlation :as correlation]
             [com.pringwa.server.metrics-state :as metrics]
             [com.pringwa.server.middleware :as middleware]
+            [com.pringwa.server.publisher :as publisher]
             [com.pringwa.server.rate-limit :as rate-limit]
             [com.pringwa.server.request-log :as request-log]
             [com.pringwa.server.timeout :as timeout]))
 
 (defn create [router config]
   (server/create router config))
+
+(defn start-publisher! [config]
+  (publisher/start! config))
 
 (defn wrap-connection [handler conn]
   (middleware/wrap-connection handler conn))

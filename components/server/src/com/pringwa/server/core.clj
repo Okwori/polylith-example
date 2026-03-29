@@ -1,5 +1,6 @@
 (ns com.pringwa.server.core
   (:require [clojure.tools.logging :as log]
+            [com.brunobonacci.mulog :as u]
             [com.pringwa.server.auth :refer [wrap-authentication]]
             [com.pringwa.server.circuit-breaker :refer [wrap-circuit-breaker]]
             [com.pringwa.server.compression :refer [wrap-gzip]]
@@ -7,6 +8,7 @@
             [com.pringwa.server.cors :refer [wrap-cors]]
             [com.pringwa.server.metrics-state :refer [wrap-metrics]]
             [com.pringwa.server.middleware :refer [wrap-cache-control wrap-connection wrap-exception]]
+            [com.pringwa.server.publisher :as publisher]
             [com.pringwa.server.rate-limit :refer [wrap-rate-limit]]
             [com.pringwa.server.request-log :refer [wrap-request-log]]
             [com.pringwa.server.timeout :refer [wrap-timeout]]
@@ -17,10 +19,10 @@
 ;; Middleware stack (outermost → innermost on the request path):
 ;;
 ;;   rate-limit        fast reject before doing any work
-;;   correlation-id    generate / propagate X-Request-ID, populate MDC
+;;   correlation-id    generate / propagate X-Request-ID, bind mulog context
 ;;   cors              preflight + response headers
 ;;   gzip              compress serialised response body
-;;   request-log       structured access log after response is known
+;;   request-log       structured mulog event after response is known
 ;;   metrics           record status + latency counters
 ;;   cache-control     Cache-Control: no-store on every response
 ;;   exception         catch unhandled exceptions → 500
@@ -33,7 +35,7 @@
 ;;   scoped-db         derive :db snapshot + :access-policy
 ;;   handler
 
-(defrecord WebServer [handler-fn database config server]
+(defrecord WebServer [handler-fn database config server publisher-stop]
   component/Lifecycle
 
   (start [this]
@@ -61,19 +63,23 @@
                              wrap-correlation-id
                              (wrap-rate-limit rate-opts))
             stop-timeout (get-in config [:server :stop-timeout-ms] 10000)
+            stop-pub     (publisher/start! (get config :mulog {:type :console}))
             http-srv     (run-jetty handler
-                           {:host        host
-                            :port        port
-                            :join?       false
+                           {:host         host
+                            :port         port
+                            :join?        false
                             :configurator (fn [^Server s]
                                             (.setStopTimeout s stop-timeout))})]
+        (u/log ::server-started :host host :port port)
         (log/infof "Web server running at %s:%s" host port)
-        (assoc this :server http-srv))))
+        (assoc this :server http-srv :publisher-stop stop-pub))))
 
   (stop [this]
     (when server
-      (.stop server))        ; honours stop-timeout before force-closing connections
-    (assoc this :server nil)))
+      (.stop server))
+    (when publisher-stop
+      (publisher-stop))
+    (assoc this :server nil :publisher-stop nil)))
 
 (defn create [router config]
   (component/using (map->WebServer {:handler-fn router

@@ -1,22 +1,19 @@
 (ns com.pringwa.server.request-log
-  "Structured per-request access logging.
+  "Structured per-request access logging via mulog.
 
-  Emits one INFO log line per request after the response is produced.
-  Fields are pushed into SLF4J MDC for the duration of the log call so
-  logstash-logback-encoder includes them as top-level JSON keys alongside
-  the standard timestamp / level / logger fields.
+  Emits one event per request after the response is produced.
+  The correlation ID flows in automatically via mulog's thread-local
+  context set by wrap-correlation-id.
 
-  Example JSON output:
-    {\"timestamp\":\"2026-03-28T12:00:00.000Z\",
-     \"level\":\"INFO\",
-     \"message\":\"GET /v1/indicators → 200 (14ms)\",
-     \"requestId\":\"550e8400-...\",
-     \"http.method\":\"GET\",
-     \"http.uri\":\"/v1/indicators\",
-     \"http.status\":\"200\",
-     \"http.duration_ms\":\"14\"}"
-  (:require [clojure.tools.logging :as log])
-  (:import (org.slf4j MDC)))
+  Example event (as JSON in CloudWatch Logs):
+    {\"mulog/event-name\": \"com.pringwa.server.request-log/http-request\",
+     \"mulog/timestamp\": \"2026-03-28T12:00:00.000Z\",
+     \"request-id\": \"550e8400-...\",
+     \"http/method\": \"GET\",
+     \"http/uri\": \"/v1/indicators\",
+     \"http/status\": 200,
+     \"http/duration-ms\": 14}"
+  (:require [com.brunobonacci.mulog :as u]))
 
 (defn wrap-request-log [handler]
   (fn [request]
@@ -26,17 +23,10 @@
           response (handler request)
           elapsed  (- (System/currentTimeMillis) start)
           status   (:status response)]
-      (MDC/put "http.method"      (or method ""))
-      (MDC/put "http.uri"         (or uri ""))
-      (MDC/put "http.status"      (str status))
-      (MDC/put "http.duration_ms" (str elapsed))
-      (try
-        (if (>= status 500)
-          (log/errorf "%s %s → %d (%dms)" method uri status elapsed)
-          (log/infof  "%s %s → %d (%dms)" method uri status elapsed))
-        (finally
-          (MDC/remove "http.method")
-          (MDC/remove "http.uri")
-          (MDC/remove "http.status")
-          (MDC/remove "http.duration_ms")))
+      (u/log ::http-request
+             :mulog/level      (if (>= status 500) :error :info)
+             :http/method      method
+             :http/uri         uri
+             :http/status      status
+             :http/duration-ms elapsed)
       response)))
