@@ -69,6 +69,12 @@ make test    # Speclj BDD specs
 
 Run by the pre-commit hook and by the CI workflow on every PR.
 
+## Observability
+
+Structured logging uses [mulog](https://github.com/BrunoBonacci/mulog). Each request emits a `::http-request` event with method, URI, status, and duration. The correlation ID set by `wrap-correlation-id` flows into every event automatically via mulog's thread-local context.
+
+In `dev`, events are printed to stdout as pretty JSON. In `staging`/`prod`, they are published to CloudWatch Logs as structured JSON — use CloudWatch Logs Insights to query them and CloudWatch Metric Filters to extract latency and error rate metrics.
+
 ## Code style
 
 ```shell

@@ -2,9 +2,9 @@
 # Service API - Makefile
 # ==============================================================================
 
-.PHONY: help install clean build run test install-hooks docker-build \
-        docker-run docker-stop format-check api-health api-indicators \
-        api-indicators-type api-indicator api-search export-openapi info
+.PHONY: help install clean build run run-mcp test install-hooks docker-build \
+        docker-run docker-stop docker-clean format-check api-health api-indicators \
+        api-indicators-type api-indicator api-search export-openapi info outdated
 
 # Default target
 .DEFAULT_GOAL := help
@@ -22,7 +22,11 @@ PORT := 8080
 
 run: ## Run application locally
 	@echo "🚀 Starting server on port $(PORT)..."
-	clojure -M::dev -m com.pringwa.service.main
+	clojure -M:dev -m com.pringwa.service.main
+
+run-mcp: ## Run MCP server (stdio by default; set MCP_TRANSPORT=sse for HTTP)
+	@echo "🤖 Starting MCP server (transport: $${MCP_TRANSPORT:-stdio})..."
+	clojure -M:dev -m com.pringwa.mcp-server.main
 
 run-jar: build ## Run the built JAR
 	@echo "🚀 Running JAR on port $(PORT)..."
@@ -94,6 +98,10 @@ docker-clean: docker-stop ## Remove Docker image
 format-check: ## Check code formatting
 	@echo "🔍 Checking formatting..."
 	clojure -M:cljfmt check
+
+outdated: ## Check for outdated dependencies
+	@echo "🔍 Checking for outdated dependencies..."
+	clojure -M:outdated
 
 # ==============================================================================
 # API TESTING (curl commands)

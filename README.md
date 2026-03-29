@@ -86,6 +86,8 @@ Configuration is managed via `aero` in `bases/service/resources/service/config.e
 | `HOST`               | Server host binding | `localhost` |
 | `PORT`               | Server port | `8080` |
 | `DATOMIC_DB_NAME`    | Name of the Datomic database | `indicators` |
+| `MULOG_LOG_GROUP`    | CloudWatch Logs log group name (staging/prod) | `/pringwa/service` |
+| `AWS_REGION`         | AWS region for CloudWatch Logs (staging/prod) | `us-east-1` |
 
 ## Usage
 ### API UI
@@ -147,12 +149,14 @@ make format-check    # Check code formatting
 |---------|-------------|
 | `make help` | Show help for all commands |
 | `make run` | Run application locally |
+| `make run-mcp` | Run MCP server (stdio by default) |
 | `make run-jar` | Build and run the JAR file |
 | `make build` | Build uberjar |
 | `make clean` | Clean build artifacts |
 | `make test` | Run Speclj specs |
 | `make install-hooks` | Install git pre-commit hooks |
 | `make format-check` | Check code formatting |
+| `make outdated` | Check for outdated dependencies |
 | `make export-openapi` | Export OpenAPI spec to `openapi.json` |
 | `make docker-build` | Build Docker image |
 | `make docker-run` | Run Docker container |
