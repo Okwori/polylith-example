@@ -14,6 +14,9 @@
 (defn create [router config]
   (server/create router config))
 
+(defn wrap-connection [handler conn]
+  (middleware/wrap-connection handler conn))
+
 (defn wrap-exception [handler]
   (middleware/wrap-exception handler))
 
