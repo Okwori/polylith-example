@@ -89,6 +89,7 @@ Configuration is managed via `aero` in `bases/service/resources/service/config.e
 | `DATOMIC_DB_NAME`    | Name of the Datomic database | `indicators` |
 | `MULOG_LOG_GROUP`    | CloudWatch Logs log group name (staging/prod) | `/pringwa/service` |
 | `AWS_REGION`         | AWS region for CloudWatch Logs (staging/prod) | `us-east-1` |
+| `SECRET_NAME`        | AWS Secrets Manager secret name (staging/prod) | `pringwa-service/{profile}` |
 
 ## Usage
 ### API UI
@@ -190,6 +191,7 @@ MCP_TRANSPORT=both clojure -M:dev -m com.pringwa.mcp-server.main
 | `MCP_SERVICE_URL` | Base URL of the indicators service | `http://localhost:8080` |
 | `MCP_SERVICE_TOKEN` | Bearer token for service auth (optional) | — |
 | `MCP_EXPORT_BUCKET` | S3 bucket for dataset export (falls back to disk if unset) | — |
+| `MCP_SECRET_NAME`   | AWS Secrets Manager secret name for MCP token (falls back to `MCP_SERVICE_TOKEN` env var) | — |
 
 ### Tools
 

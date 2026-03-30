@@ -4,7 +4,8 @@
          clj-http/clj-http          {:mvn/version "3.13.1"}
          ring/ring                   {:mvn/version "1.15.3"}
          org.slf4j/slf4j-simple      {:mvn/version "2.0.17"}
-         com.cognitect.aws/api       {:mvn/version "0.8.692"}
-         com.cognitect.aws/endpoints {:mvn/version "1.1.12.626"}
-         com.cognitect.aws/s3        {:mvn/version "848.2.1413.0"}}
+         com.cognitect.aws/api            {:mvn/version "0.8.692"}
+         com.cognitect.aws/endpoints      {:mvn/version "1.1.12.626"}
+         com.cognitect.aws/s3             {:mvn/version "848.2.1413.0"}
+         com.cognitect.aws/secretsmanager {:mvn/version "871.2.39.3"}}
  :aliases {:uberjar {:main com.pringwa.mcp-server.main}}}

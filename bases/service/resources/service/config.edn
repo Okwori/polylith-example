@@ -42,6 +42,12 @@
                    :recovery-timeout-ms #long #or [#env CB_RECOVERY_TIMEOUT_MS 30000]
                    :success-threshold   #long #or [#env CB_SUCCESS_THRESHOLD 2]}
 
+ ;; AWS Secrets Manager secret name. Nil in dev — service falls back to config.edn defaults.
+ ;; Secret must be a JSON object; supported keys: cors-origin, jwt-public-key.
+ :secret-name #profile {:dev     nil
+                         :staging #or [#env SECRET_NAME "pringwa-service/staging"]
+                         :prod    #or [#env SECRET_NAME "pringwa-service/prod"]}
+
  :mulog #profile {:dev     {:type :console :pretty? true}
                   :staging {:type                      :mulog/cloudwatch
                             :cloudwatch/log-group-name #or [#env MULOG_LOG_GROUP "/pringwa/service"]

@@ -12,6 +12,10 @@
 
         com.datomic/ion  {:mvn/version "1.0.71"}
 
+        com.cognitect.aws/api            {:mvn/version "0.8.692"}
+        com.cognitect.aws/endpoints      {:mvn/version "1.1.12.626"}
+        com.cognitect.aws/secretsmanager {:mvn/version "871.2.39.3"}
+
         ;; Override Datomic Local's transitive Caffeine 2.x to silence
         ;; sun.misc.Unsafe deprecation warnings on Java 21+
         com.github.ben-manes.caffeine/caffeine {:mvn/version "3.2.3"}}

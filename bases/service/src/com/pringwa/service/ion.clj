@@ -6,6 +6,7 @@
             [clojure.tools.logging :as log]
             [com.pringwa.server.interface :as server]
             [com.pringwa.service.routes :as routes]
+            [com.pringwa.service.secrets :as secrets]
             [datomic.client.api :as d]
             [datomic.ion :as ion]))
 
@@ -15,6 +16,13 @@
 
 (defonce ^:private _publisher
   (delay (server/start-publisher! (get (config) :mulog {:type :console}))))
+
+(defonce ^:private !secrets
+  (delay
+    (if-let [secret-name (:secret-name (config))]
+      (do (log/infof "Fetching secrets from Secrets Manager: %s" secret-name)
+          (secrets/fetch secret-name))
+      {})))
 
 (defonce ^:private !conn
   (delay
@@ -37,11 +45,17 @@
 ;; wrap-rate-limit is also at API Gateway level, but we include a conservative
 ;; in-app limit as defence-in-depth.
 (def ^:private app
-  (let [cfg (config)
-        _   @_publisher]
+  (let [cfg     (config)
+        sec     @!secrets
+        _       @_publisher
+        cors-opts (cond-> (get cfg :cors {})
+                    (:cors-origin sec)
+                    (assoc :allowed-origins [(:cors-origin sec)]))]
     (-> (routes/router)
         (server/wrap-connection @!conn)
-        (server/wrap-authentication {})
+        (server/wrap-authentication (cond-> {}
+                                      (:jwt-public-key sec)
+                                      (assoc :public-key (:jwt-public-key sec))))
         (server/wrap-timeout (get cfg :timeout {}))
         (server/wrap-circuit-breaker (get cfg :circuit-breaker {}))
         server/wrap-exception
@@ -49,7 +63,7 @@
         server/wrap-metrics
         server/wrap-request-log
         server/wrap-gzip
-        (server/wrap-cors (get cfg :cors {}))
+        (server/wrap-cors cors-opts)
         server/wrap-correlation-id
         (server/wrap-rate-limit (get cfg :rate-limit {})))))
 
