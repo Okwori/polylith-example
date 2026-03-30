@@ -1,14 +1,17 @@
 name: Deploy — Staging
 
 on:
-  push:
-    branches: [main]
+  workflow_run:
+    workflows: [CI]
+    branches:  [main]
+    types:     [completed]
 
 jobs:
   deploy:
     name: Push & deploy to staging
     runs-on: ubuntu-latest
     environment: staging
+    if: github.event.workflow_run.conclusion == 'success'
 
     env:
       AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -16,6 +19,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up Java
         uses: actions/setup-java@v5.2.0
@@ -46,16 +51,16 @@ jobs:
           aws-region:            ${{ secrets.AWS_REGION }}
 
       - name: Push to Datomic Cloud
-        run: clojure -A:dev:ion push --uname ${{ github.sha }}
+        run: clojure -A:dev:ion push --uname ${{ github.event.workflow_run.head_sha }}
 
       - name: Deploy to staging
         run: |
           clojure -A:dev:ion deploy \
             --system ${{ vars.STAGING_SYSTEM }} \
-            --uname  ${{ github.sha }}
+            --uname  ${{ github.event.workflow_run.head_sha }}
 
       - name: Wait for deploy
         run: |
           clojure -A:dev:ion deploy-status \
             --system ${{ vars.STAGING_SYSTEM }} \
-            --uname  ${{ github.sha }}
+            --uname  ${{ github.event.workflow_run.head_sha }}
