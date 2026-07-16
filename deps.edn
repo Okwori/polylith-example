@@ -25,5 +25,5 @@
                    :jvm-opts   ["--enable-native-access=ALL-UNNAMED"]
                    :extra-deps {polylith/clj-poly {:mvn/version "0.3.32"}}}
 
-            :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.16.0"}}
+            :cljfmt {:extra-deps {dev.weavejester/cljfmt {:mvn/version "0.16.5"}}
                      :main-opts ["-m" "cljfmt.main"]}}}
